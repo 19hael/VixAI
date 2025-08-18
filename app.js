@@ -1233,17 +1233,37 @@ async function registerHandler(e){
    return shake(registerForm);
   }
   const hash=await sha256(pass);
-  await sb('usuarios',{
-    method:'POST',
-    body:{
-      nombre_completo:nombre,
-      email,
-      password_hash:hash,
-      seccion:'general',
-      origen:'web'
-    },
-    headers:{Prefer:'return=minimal'}
-  });
+  const origenCandidates=['app','landing','organic','direct','unknown'];
+  let insertOk=false;
+  for(const origen of origenCandidates){
+    try{
+      await sb('usuarios',{
+        method:'POST',
+        body:{
+          nombre_completo:nombre,
+          email,
+          password_hash:hash,
+          seccion:'general',
+          origen
+        },
+        headers:{Prefer:'return=minimal'}
+      });
+      insertOk=true;
+      break;
+    }catch(err){
+      if(!(err && err.status===400)){
+        throw err;
+      }
+      const msg=(err.message||'').toLowerCase();
+      if(!msg.includes('origen')||!msg.includes('check')){
+        throw err;
+      }
+      // try next candidate
+    }
+  }
+  if(!insertOk){
+    throw new Error('No se pudo registrar: ninguno de los valores propuestos para "origen" pasó la validación.');
+  }
   const createdRows = await sb('usuarios',{query:{select:'id,nombre_completo,email',email:`eq.${email}`,limit:1}});
   const user=createdRows && createdRows[0];
   if(!user){
