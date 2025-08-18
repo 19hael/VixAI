@@ -23,6 +23,10 @@
 .btn.ghost:hover{background:rgba(255,255,255,.12)}
 
 .auth-panel{position:fixed;top:16px;left:16px;width:320px;max-width:92vw;background:rgba(255,255,255,.06);backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,.12);border-radius:18px;box-shadow:0 20px 60px rgba(0,0,0,.35);z-index:10}
+.auth-min{position:absolute;top:8px;right:8px;width:28px;height:28px;display:inline-flex;align-items:center;justify-content:center;background:rgba(255,255,255,.08);color:#fff;border:1px solid rgba(255,255,255,.14);border-radius:8px;cursor:pointer}
+.auth-min:hover{background:rgba(255,255,255,.12)}
+.auth-panel.collapsed{width:auto}
+.auth-panel.collapsed .tabs,.auth-panel.collapsed .tab-content{display:none}
 .tabs{position:relative;display:flex}
 .tab{flex:1;background:transparent;color:#cfcfe4;padding:.9rem .75rem;font-weight:600;border:0;cursor:pointer}
 .tab.active{color:#fff}
@@ -119,6 +123,7 @@
 
 @media (max-width: 600px){
   .auth-panel{left:50%;right:auto;transform:translateX(-50%)}
+  .auth-panel.collapsed{transform:translateX(-50%)}
   .progress-indicator{left:12px;right:12px;bottom:calc(64px + var(--safe-bottom));top:auto;align-items:stretch}
   .progress-bar{width:100%}
   .hero{min-height:36dvh;padding:3rem 1rem 1.25rem}
@@ -135,6 +140,7 @@
 
 @media (max-width: 480px){
   .auth-panel{width:94vw;top:12px;border-radius:16px}
+  .auth-panel.collapsed{width:auto}
   .tab{padding:.8rem .6rem}
   .tab-content{padding:.85rem}
   .form .btn{width:100%}
