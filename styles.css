@@ -1,5 +1,5 @@
 *{box-sizing:border-box}html,body{height:100%}body{margin:0;background:#0b0b10;color:#e9e9ef;font-family:ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,Apple Color Emoji,Segoe UI Emoji;overflow-x:hidden}
-:root{--safe-bottom:env(safe-area-inset-bottom, 0px)}
+:root{--safe-bottom:env(safe-area-inset-bottom, 0px);color-scheme:dark}
 .bg{position:fixed;inset:0;z-index:-2;overflow:hidden}
 .blob{position:absolute;width:50vmax;height:50vmax;border-radius:50%;filter:blur(64px);opacity:.3;animation:float 26s ease-in-out infinite}
 .b1{background:radial-gradient(circle at 30% 30%,#8a2be2,transparent 60%);top:-10vmax;left:-20vmax;animation-duration:24s}
@@ -35,6 +35,8 @@
 .field input::placeholder{color:#c1c1d3}
 .field input:focus,.field select:focus{border-color:#7b6dff;box-shadow:0 0 0 4px rgba(123,109,255,.15);background:rgba(255,255,255,.12)}
 .select select{appearance:none}
+.field select option,.field select optgroup{background:#14141e;color:#e9e9ef}
+.field select option:checked,.field select option:hover{background:#2a2a3a;color:#fff}
 
 .avatar{position:fixed;top:16px;left:16px;display:flex;align-items:center;gap:.5rem;z-index:11}
 .avatar-circle{width:48px;height:48px;border-radius:50%;background:linear-gradient(135deg,#6b46ff,#3aa0ff);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;letter-spacing:.02em;box-shadow:0 10px 30px rgba(59,97,255,.4);cursor:pointer}
