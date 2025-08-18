@@ -7,7 +7,43 @@ function moveUnderline(){const active=document.querySelector('.tab.active');if(!
 function switchTab(name){tabs.forEach(b=>b.classList.toggle('active',b.dataset.tab===name));$$(".form").forEach(f=>f.classList.remove('show'));if(name==='register')registerForm.classList.add('show');else loginForm.classList.add('show');moveUnderline()}
 function initialsFrom(name){return name.trim().split(/\s+/).map(p=>p[0]?.toUpperCase()).slice(0,2).join('')||'U'}
 async function sha256(t){const enc=new TextEncoder().encode(t);const h=await crypto.subtle.digest('SHA-256',enc);return Array.from(new Uint8Array(h)).map(b=>b.toString(16).padStart(2,'0')).join('')}
-async function sb(path,{method='GET',body,headers,query}={}){const q=query?"?"+new URLSearchParams(query).toString():"";const res=await fetch(`${SUPABASE_URL}/rest/v1/${path}${q}`,{method,headers:{apikey:SUPABASE_KEY,Authorization:`Bearer ${SUPABASE_KEY}`,'Content-Type':'application/json',Prefer:'return=representation',...(headers||{})},body:body?JSON.stringify(body):undefined});if(!res.ok)throw new Error(await res.text());return await res.json()}
+async function sb(path,{method='GET',body,headers,query}={}){
+  const q=query?"?"+new URLSearchParams(query).toString():"";
+  // Default Prefer to minimal for mutating requests unless explicitly overridden
+  const isMutating = method && method.toUpperCase() !== 'GET';
+  const defaultPrefer = isMutating ? 'return=minimal' : 'return=representation';
+  const finalHeaders = {
+    apikey: SUPABASE_KEY,
+    Authorization: `Bearer ${SUPABASE_KEY}`,
+    'Content-Type': 'application/json',
+    Prefer: defaultPrefer,
+    ...(headers||{})
+  };
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/${path}${q}`,{
+    method,
+    headers: finalHeaders,
+    body: body?JSON.stringify(body):undefined
+  });
+  if(!res.ok){
+    const text = await res.text().catch(()=>'');
+    // Surface precise PostgREST error for debugging
+    console.error('Supabase request failed', {
+      path, method, status: res.status, statusText: res.statusText, headers: finalHeaders, query, body
+    });
+    console.error('Supabase error body:', text);
+    const err = new Error(text || `Supabase error ${res.status}`);
+    // Attach status to help callers branch on 409/400/etc.
+    err.status = res.status;
+    throw err;
+  }
+  // Some endpoints with return=minimal will have empty body
+  const ct = res.headers.get('Content-Type')||'';
+  if(ct.includes('application/json')){
+    return await res.json();
+  }
+  const t = await res.text();
+  try{ return t?JSON.parse(t):null }catch{ return t || null }
+}
 function saveSession(u){currentUser=u;localStorage.setItem('vixai_user',JSON.stringify(u))}
 function loadSession(){try{const s=localStorage.getItem('vixai_user');if(s){currentUser=JSON.parse(s)}}catch{}}
 function clearSession(){currentUser=null;localStorage.removeItem('vixai_user')}
@@ -1252,14 +1288,16 @@ async function registerHandler(e){
  }
  try{
   // Verificar si el email ya existe
-  const exists=await sb('usuarios',{query:{select:'id',email:`eq.${email}`}});
+  const exists=await sb('usuarios',{query:{select:'id',email:`eq.${email}`,limit:1}});
   if(exists && exists.length){
    return shake(registerForm);
   }
   const hash=await sha256(pass);
   // Crear usuario mínimo requerido por login: nombre_completo, email, password_hash
-  const created=await sb('usuarios',{method:'POST',body:{nombre_completo:nombre,email,password_hash:hash}});
-  const user=created && created[0];
+  await sb('usuarios',{method:'POST',body:{nombre_completo:nombre,email,password_hash:hash},headers:{Prefer:'return=minimal'}});
+  // Recuperar el usuario recién creado (columns necesarios para la sesión)
+  const createdRows = await sb('usuarios',{query:{select:'id,nombre_completo,email',email:`eq.${email}`,limit:1}});
+  const user=createdRows && createdRows[0];
   if(!user){
    return shake(registerForm);
   }
@@ -1268,6 +1306,10 @@ async function registerHandler(e){
   await fetchProgress();
   showModules();
  }catch(err){
+  // Si hay conflicto por email único
+  if(err && err.status===409){
+    console.warn('Email ya registrado');
+  }
   shake(registerForm);
  }
 }
@@ -1297,3 +1339,4 @@ function restoreUI(){loadSession();if(currentUser){showAvatar()}else{showAuth()}
 registerForm.addEventListener('submit',registerHandler);loginForm.addEventListener('submit',loginHandler);handleTabs();handleAvatar();handleCTA();handleModal();handleHelp();restoreUI();
 setupLiquidHover();
 setupGlobalGlow();
+
