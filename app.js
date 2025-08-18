@@ -25,17 +25,14 @@ async function sb(path,{method='GET',body,headers,query}={}){
   });
   if(!res.ok){
     const text = await res.text().catch(()=>'');
-    // Surface precise PostgREST error for debugging
     console.error('Supabase request failed', {
       path, method, status: res.status, statusText: res.statusText, headers: finalHeaders, query, body
     });
     console.error('Supabase error body:', text);
     const err = new Error(text || `Supabase error ${res.status}`);
-    // Attach status to help callers branch on 409/400/etc.
     err.status = res.status;
     throw err;
   }
-  // Some endpoints with return=minimal will have empty body
   const ct = res.headers.get('Content-Type')||'';
   if(ct.includes('application/json')){
     return await res.json();
@@ -273,30 +270,11 @@ function module1Content(){return `<div class="m-tabs"><button class="m-tab activ
 <div class="m-body" id="m2-q"></div>
 </div>
 </div>
-<div class="m-body" id="m1-q"></div>`}
-function renderM1Quiz(){const qs=[
-{q:"La IA se ocupa de:",o:["Solo de robots físicos","Sistemas que realizan tareas inteligentes","Diseño de circuitos"],a:1},
-{q:"Un ejemplo de IA en teléfonos:",o:["Linterna","Asistente de voz","Modo avión"],a:1},
-{q:"El aprendizaje supervisado usa:",o:["Datos etiquetados","Solo texto","Solo imágenes"],a:0},
-{q:"La métrica de evaluación sirve para:",o:["Medir desempeño","Acelerar la GPU","Almacenar datos"],a:0},
-{q:"Un riesgo común es:",o:["Sesgo","Menor exactitud","Menor latencia"],a:0},
-{q:"Para desplegar un modelo se requiere:",o:["Un pipeline y monitoreo","Únicamente más datos","Nada adicional"],a:0}
-];const quizHtml=qs.map((q,i)=>`<div class="q"><div>${i+1}. ${q.q}</div>${q.o.map((opt,j)=>`<label><input type="radio" name="mq${i}" value="${j}"> <span>${opt}</span></label>`).join('')}</div>`).join('');return `<div class="quiz">${quizHtml}<button class=\"btn primary\" id=\"m1-submit\">Enviar</button></div>`}
-function handleM1Logic(){const tabs=$$('.m-tab');const bodies={c:$('#m1-c'),p:$('#m1-p'),q:$('#m1-q')};tabs.forEach(t=>t.addEventListener('click',()=>{tabs.forEach(x=>x.classList.remove('active'));t.classList.add('active');Object.values(bodies).forEach(b=>b.classList.remove('show'));bodies[t.dataset.t].classList.add('show')}));const storeKey='vixai_m1';function load(){try{return JSON.parse(localStorage.getItem(storeKey)||'{}')}catch{return{}}}function save(s){localStorage.setItem(storeKey,JSON.stringify(s))}const st=load();if(st.read)$('#markReadM1').textContent='Leído';$('#markReadM1').addEventListener('click',()=>{const s=load();s.read=true;save(s);$('#markReadM1').textContent='Leído'});
-$('#m1-q').innerHTML=renderM1Quiz();
-const p1Btn=document.querySelector('[data-check="p1"]');p1Btn.addEventListener('click',()=>{const vals=[...document.querySelectorAll('#p1 input[type=checkbox]')].filter(i=>i.checked).map(i=>i.value);const ok=vals.sort().join(',')==='a,c';$('#p1-res').innerHTML= ok?'<span class="ok">Correcto</span>':'<span class="bad">Revisa: a y c usan IA</span>';const s=load();s.p1=!!ok;save(s)});
-$('#p2').addEventListener('click',e=>{const b=e.target.closest('.tag');if(!b)return;b.classList.toggle('active');const act=(x)=>document.querySelector(`[data-k=${x}]`).classList.contains('active');const ok=act('t1')&&!act('t2')&&act('t3')&&!act('t4');$('#p2-res').innerHTML= ok?'<span class="ok">Correcto</span>':'<span class="bad">Marca solo IA en t1 y t3</span>';const s=load();s.p2=!!ok;save(s)});
-document.querySelector('[data-check="p3"]').addEventListener('click',()=>{const v=$('#p3-input').value.toLowerCase();const hasGoal=v.includes('resumen')||v.includes('resume');const hasLength=v.includes('3')||v.includes('tres')||v.includes('puntos');const hasAudience=v.includes('secundaria')||v.includes('estudiantes');const ok=hasGoal&&hasLength&&hasAudience&&v.length>40;$('#p3-res').innerHTML= ok?'<span class="ok">Buen prompt</span>':'<span class="bad">Incluye objetivo, longitud (3 puntos) y audiencia</span>';const s=load();s.p3=!!ok;save(s)});
- // P4 leakage detection
- $('#p4').addEventListener('click',e=>{const b=e.target.closest('.tag');if(!b)return; b.classList.toggle('active');const act=k=>document.querySelector(`[data-k=${k}]`).classList.contains('active');const ok=act('l1')&&act('l3')&&!act('l2')&&!act('l4');$('#p4-res').innerHTML= ok?'<span class="ok">Correcto</span>':'<span class="bad">Activa l1 y l3; evita l2 y l4</span>';const s=load();s.p4=!!ok;save(s)});
- // P5 metric choice
- document.querySelector('[data-check="p5"]').addEventListener('click',()=>{const v=$('#p5-input').value.trim().toLowerCase();const ok=v.includes('recall')||v.includes('sensibilidad')||v.includes('tpr')||v.includes('f1')||v.includes('f2');$('#p5-res').innerHTML= ok?'<span class="ok">Buena elección</span>':'<span class="bad">Sugerencia: recall (sensibilidad) o F1/F2</span>';const s=load();s.p5=!!ok;save(s)});
-$('#m1-q #m1-submit').addEventListener('click',async()=>{const names=[0,1,2,3,4,5].map(i=>`mq${i}`);const ans=names.map((n,i)=>parseInt((document.querySelector(`input[name=${n}]:checked`)||{}).value));if(ans.some(isNaN))return;const solutions=[1,1,0,0,0,0];const correct=ans.filter((a,i)=>a===solutions[i]).length;const pass=correct/solutions.length>=0.8;if(!pass){shake($('#m1-q'));return}await markCompleted(1);closeModal();celebrate();renderGrid();updateProgressUI()});
-}
-// --- Module 2: Datos y modelos (contenido extendido) ---
-function module2Content(){return `
-<div class=\"m-tabs\"><button class=\"m-tab active\" data-t=\"c\">Contenido</button><button class=\"m-tab\" data-t=\"p\">Prácticas</button><button class=\"m-tab\" data-t=\"q\">Quiz</button></div>
-<div class=\"m-body show\" id=\"m2-c\"> 
+<div class="m-body" id="m1-q"></div>
+</div>
+</div>
+<div class="m-body" id="m2-c">
+  <div class="m-section">
   <div class=\"m-section\">
     <h3>Calidad de datos</h3>
     <p>La calidad de los datos determina el techo del rendimiento del modelo. Problemas comunes incluyen valores faltantes, outliers, fuga de información, desbalance de clases y etiquetado ruidoso.</p>
@@ -467,16 +445,13 @@ function handleM2Logic(){
   const st=load();
   if(st.read)$('#markReadM2').textContent='Leído';
   $('#markReadM2').addEventListener('click',()=>{const s=load();s.read=true;save(s);$('#markReadM2').textContent='Leído'});
-  // Render Quiz
   $('#m2-q').innerHTML=renderM2Quiz();
-  // P1 checkboxes
   document.querySelector('[data-check="m2p1"]').addEventListener('click',()=>{
     const vals=[...document.querySelectorAll('#m2p1 input[type=checkbox]')].filter(i=>i.checked).map(i=>i.value);
     const ok=vals.sort().join(',')==='a,c,d';
     $('#m2p1-res').innerHTML= ok?'<span class="ok">Correcto</span>':'<span class="bad">Problemas: a, c y d</span>';
     const s=load();s.p1=!!ok;save(s);
   });
-  // P2 tags
   $('#m2p2').addEventListener('click',e=>{
     const b=e.target.closest('.tag');if(!b)return; b.classList.toggle('active');
     const act=(k)=>document.querySelector(`[data-k=${k}]`).classList.contains('active');
@@ -484,14 +459,12 @@ function handleM2Logic(){
     $('#m2p2-res').innerHTML= ok?'<span class="ok">Correcto</span>':'<span class="bad">Activa s1 y s3 con estratificación</span>';
     const s=load();s.p2=!!ok;save(s);
   });
-  // P3 metric input
   document.querySelector('[data-check="m2p3"]').addEventListener('click',()=>{
     const v=$('#m2p3-input').value.trim().toLowerCase();
     const ok=v.includes('auc-pr')||v.includes('pr auc')||v.includes('precision-recall')||v.includes('f1');
     $('#m2p3-res').innerHTML= ok?'<span class="ok">Buena elección</span>':'<span class="bad">Sugerencia: AUC-PR o F1</span>';
     const s=load();s.p3=!!ok;save(s);
   });
-  // P4 leakage tags
   $('#m2p4').addEventListener('click',e=>{
     const b=e.target.closest('.tag'); if(!b)return; b.classList.toggle('active');
     const act=(k)=>document.querySelector(`[data-k=${k}]`).classList.contains('active');
@@ -499,18 +472,16 @@ function handleM2Logic(){
     $('#m2p4-res').innerHTML= ok?'<span class="ok">Correcto</span>':'<span class="bad">Activa l1 y l3; evita l2 y l4</span>';
     const s=load(); s.p4=!!ok; save(s);
   });
-  // P5 metric/threshold input
   document.querySelector('[data-check="m2p5"]').addEventListener('click',()=>{
     const v=$('#m2p5-input').value.trim().toLowerCase();
     const ok=v.includes('recall')||v.includes('f2')||v.includes('auc-pr')||v.includes('balanced accuracy')||v.includes('balanced accuracy')||v.includes('precision-recall')||v.includes('threshold')||v.includes('umbral');
     $('#m2p5-res').innerHTML= ok?'<span class="ok">Buena dirección</span>':'<span class="bad">Sugerencia: recall/F2 o AUC-PR y optimizar umbral</span>';
     const s=load(); s.p5=!!ok; save(s);
   });
-  // Quiz submit
   $('#m2-submit').addEventListener('click',async()=>{
     const names=[0,1,2,3,4,5,6].map(i=>`m2q${i}`);
     const ans=names.map((n)=>parseInt((document.querySelector(`input[name=${n}]:checked`)||{}).value));
-    if(ans.some(isNaN))return; // incompleto
+    if(ans.some(isNaN))return;
     const solutions=[0,1,0,1,0,1,0];
     const correct=ans.filter((a,i)=>a===solutions[i]).length;
     const pass=correct/solutions.length>=0.8;
@@ -522,7 +493,6 @@ function handleM2Logic(){
     updateProgressUI();
   });
 }
-// --- Module 5: Ética en IA (contenido extendido) ---
 function module5Content(){return `
 <div class=\"m-tabs\"><button class=\"m-tab active\" data-t=\"c\">Contenido</button><button class=\"m-tab\" data-t=\"p\">Prácticas</button><button class=\"m-tab\" data-t=\"q\">Quiz</button></div>
 <div class=\"m-body show\" id=\"m5-c\">
@@ -759,27 +729,19 @@ function handleM5Logic(){
   const st=load();
   if(st.read)$('#markReadM5').textContent='Leído';
   $('#markReadM5').addEventListener('click',()=>{const s=load();s.read=true;save(s);$('#markReadM5').textContent='Leído'});
-
-  // Render Quiz
   $('#m5-q').innerHTML=renderM5Quiz();
-
-  // P1: bias detection
   document.querySelector('[data-check="m5p1"]').addEventListener('click',()=>{
     const vals=[...document.querySelectorAll('#m5p1 input[type=checkbox]')].filter(i=>i.checked).map(i=>i.value);
     const ok=vals.sort().join(',')==='a,b,d';
     $('#m5p1-res').innerHTML= ok?'<span class="ok">Correcto</span>':'<span class="bad">Sesgos: muestreo, etiquetado, feedback loop</span>';
     const s=load();s.p1=!!ok;save(s);
   });
-
-  // P2: fairness metric
   document.querySelector('[data-check="m5p2"]').addEventListener('click',()=>{
     const v=$('#m5p2-input').value.trim().toLowerCase();
     const ok=['paridad','igualdad de oportunidades','equalized odds','predictive parity','tpr','fpr'].some(k=>v.includes(k));
     $('#m5p2-res').innerHTML= ok?'<span class="ok">Válido</span>':'<span class="bad">Ej: paridad demográfica, igualdad de oportunidades, equalized odds</span>';
     const s=load();s.p2=!!ok;save(s);
   });
-
-  // P3: mitigation
   $('#m5p3').addEventListener('click',e=>{
     const b=e.target.closest('.tag'); if(!b)return; b.classList.toggle('active');
     const act=k=>document.querySelector(`[data-k=${k}]`).classList.contains('active');
@@ -788,7 +750,6 @@ function handleM5Logic(){
     const s=load();s.p3=!!ok;save(s);
   });
 
-  // P4: privacy
   $('#m5p4').addEventListener('click',e=>{
     const b=e.target.closest('.tag'); if(!b)return; b.classList.toggle('active');
     const act=k=>document.querySelector(`[data-k=${k}]`).classList.contains('active');
@@ -797,7 +758,6 @@ function handleM5Logic(){
     const s=load();s.p4=!!ok;save(s);
   });
 
-  // P5: governance plan
   document.querySelector('[data-check="m5p5"]').addEventListener('click',()=>{
     const v=$('#m5p5-input').value.trim().toLowerCase();
     const ok=['model card','datasheet','auditor','auditoría','log','bitácora','ruta','apelación','oversight','humano','revisión','comité','risk','riesgo'].some(k=>v.includes(k));
@@ -805,7 +765,6 @@ function handleM5Logic(){
     const s=load();s.p5=!!ok;save(s);
   });
 
-  // P6: red teaming
   document.querySelector('[data-check="m5p6"]').addEventListener('click',()=>{
     const v=$('#m5p6-input').value.trim().toLowerCase();
     const attacks=['jailbreak','prompt injection','injection','fuga','exfiltr','toxic','toxici','sesgo','bias','spoof','evasion','evasive','poison','poisoning'];
@@ -817,11 +776,10 @@ function handleM5Logic(){
     const s=load();s.p6=!!ok;save(s);
   });
 
-  // Quiz submit
   $('#m5-submit').addEventListener('click',async()=>{
     const names=[0,1,2,3,4,5,6].map(i=>`m5q${i}`);
     const ans=names.map((n)=>parseInt((document.querySelector(`input[name=${n}]:checked`)||{}).value));
-    if(ans.some(isNaN))return; // incompleto
+    if(ans.some(isNaN))return;
     const solutions=[0,0,0,0,0,0,0];
     const correct=ans.filter((a,i)=>a===solutions[i]).length;
     const pass=correct/solutions.length>=0.8;
@@ -833,7 +791,6 @@ function handleM5Logic(){
     updateProgressUI();
   });
 }
-// --- Module 4: Producción y MLOps (contenido extendido) ---
 function module4Content(){return `
 <div class=\"m-tabs\"><button class=\"m-tab active\" data-t=\"c\">Contenido</button><button class=\"m-tab\" data-t=\"p\">Prácticas</button><button class=\"m-tab\" data-t=\"q\">Quiz</button></div>
 <div class=\"m-body show\" id=\"m4-c\">
@@ -975,10 +932,8 @@ function handleM4Logic(){
   if(st.read)$('#markReadM4').textContent='Leído';
   $('#markReadM4').addEventListener('click',()=>{const s=load();s.read=true;save(s);$('#markReadM4').textContent='Leído'});
 
-  // Render Quiz
   $('#m4-q').innerHTML=renderM4Quiz();
 
-  // P1: monitoring indicators
   document.querySelector('[data-check="m4p1"]').addEventListener('click',()=>{
     const vals=[...document.querySelectorAll('#m4p1 input[type=checkbox]')].filter(i=>i.checked).map(i=>i.value);
     const ok=vals.sort().join(',')==='a,c,d';
@@ -986,7 +941,6 @@ function handleM4Logic(){
     const s=load();s.p1=!!ok;save(s);
   });
 
-  // P2: deployment strategies
   $('#m4p2').addEventListener('click',e=>{
     const b=e.target.closest('.tag'); if(!b)return; b.classList.toggle('active');
     const act=k=>document.querySelector(`[data-k=${k}]`).classList.contains('active');
@@ -995,7 +949,6 @@ function handleM4Logic(){
     const s=load();s.p2=!!ok;save(s);
   });
 
-  // P3: metrics input
   document.querySelector('[data-check="m4p3"]').addEventListener('click',()=>{
     const v=$('#m4p3-input').value.trim().toLowerCase();
     const ok=['latencia','p95','p99','deriva','drift','precision','recall','f1','auc','ctr','conversion','conversión','tasa','slo','sla','error'].some(k=>v.includes(k));
@@ -1003,7 +956,6 @@ function handleM4Logic(){
     const s=load();s.p3=!!ok;save(s);
   });
 
-  // P4: skew
   $('#m4p4').addEventListener('click',e=>{
     const b=e.target.closest('.tag'); if(!b)return; b.classList.toggle('active');
     const act=k=>document.querySelector(`[data-k=${k}]`).classList.contains('active');
@@ -1012,7 +964,6 @@ function handleM4Logic(){
     const s=load();s.p4=!!ok;save(s);
   });
 
-  // P5: rollout plan
   document.querySelector('[data-check="m4p5"]').addEventListener('click',()=>{
     const v=$('#m4p5-input').value.trim().toLowerCase();
     const ok=['shadow','canary','blue','green','rollback','feature flag','feature-flag'].some(k=>v.includes(k));
@@ -1020,11 +971,10 @@ function handleM4Logic(){
     const s=load();s.p5=!!ok;save(s);
   });
 
-  // Quiz submit
   $('#m4-submit').addEventListener('click',async()=>{
     const names=[0,1,2,3,4,5,6].map(i=>`m4q${i}`);
     const ans=names.map((n)=>parseInt((document.querySelector(`input[name=${n}]:checked`)||{}).value));
-    if(ans.some(isNaN))return; // incompleto
+    if(ans.some(isNaN))return;
     const solutions=[0,0,0,0,0,0,0];
     const correct=ans.filter((a,i)=>a===solutions[i]).length;
     const pass=correct/solutions.length>=0.8;
@@ -1036,7 +986,6 @@ function handleM4Logic(){
     updateProgressUI();
   });
 }
-// --- Module 3: Entrenamiento (contenido extendido) ---
 function module3Content(){return `
 <div class="m-tabs"><button class="m-tab active" data-t="c">Contenido</button><button class="m-tab" data-t="p">Prácticas</button><button class="m-tab" data-t="q">Quiz</button></div>
 <div class="m-body show" id="m3-c">
@@ -1189,10 +1138,8 @@ function handleM3Logic(){
   if(st.read)$('#markReadM3').textContent='Leído';
   $('#markReadM3').addEventListener('click',()=>{const s=load();s.read=true;save(s);$('#markReadM3').textContent='Leído'});
 
-  // Render Quiz
   $('#m3-q').innerHTML=renderM3Quiz();
 
-  // P1: overfitting patterns
   document.querySelector('[data-check="m3p1"]').addEventListener('click',()=>{
     const vals=[...document.querySelectorAll('#m3p1 input[type=checkbox]')].filter(i=>i.checked).map(i=>i.value);
     const ok=vals.sort().join(',')==='a,c';
@@ -1200,7 +1147,6 @@ function handleM3Logic(){
     const s=load();s.p1=!!ok;save(s);
   });
 
-  // P2: regularización
   $('#m3p2').addEventListener('click',e=>{
     const b=e.target.closest('.tag'); if(!b)return; b.classList.toggle('active');
     const act=k=>document.querySelector(`[data-k=${k}]`).classList.contains('active');
@@ -1209,7 +1155,6 @@ function handleM3Logic(){
     const s=load();s.p2=!!ok;save(s);
   });
 
-  // P3: LR strategy
   document.querySelector('[data-check="m3p3"]').addEventListener('click',()=>{
     const v=$('#m3p3-input').value.trim().toLowerCase();
     const ok=['cosine','onecycle','one-cycle','warmup','decay','scheduler','reduce lr','step lr','exponential'].some(k=>v.includes(k));
@@ -1217,7 +1162,6 @@ function handleM3Logic(){
     const s=load();s.p3=!!ok;save(s);
   });
 
-  // P4: early stopping
   $('#m3p4').addEventListener('click',e=>{
     const b=e.target.closest('.tag'); if(!b)return; b.classList.toggle('active');
     const act=k=>document.querySelector(`[data-k=${k}]`).classList.contains('active');
@@ -1226,7 +1170,6 @@ function handleM3Logic(){
     const s=load();s.p4=!!ok;save(s);
   });
 
-  // P5: optimizer choice
   document.querySelector('[data-check="m3p5"]').addEventListener('click',()=>{
     const v=$('#m3p5-input').value.trim().toLowerCase();
     const ok=v.includes('adam')||v.includes('adamw')||v.includes('sgd')&&v.includes('moment');
@@ -1234,7 +1177,6 @@ function handleM3Logic(){
     const s=load();s.p5=!!ok;save(s);
   });
 
-  // Quiz submit
   $('#m3-submit').addEventListener('click',async()=>{
     const names=[0,1,2,3,4,5,6].map(i=>`m3q${i}`);
     const ans=names.map((n)=>parseInt((document.querySelector(`input[name=${n}]:checked`)||{}).value));
@@ -1286,15 +1228,21 @@ async function registerHandler(e){
   return shake(registerForm);
  }
  try{
-  // Verificar si el email ya existe
   const exists=await sb('usuarios',{query:{select:'id',email:`eq.${email}`,limit:1}});
   if(exists && exists.length){
    return shake(registerForm);
   }
   const hash=await sha256(pass);
-  // Crear usuario mínimo requerido por login: nombre_completo, email, password_hash
-  await sb('usuarios',{method:'POST',body:{nombre_completo:nombre,email,password_hash:hash},headers:{Prefer:'return=minimal'}});
-  // Recuperar el usuario recién creado (columns necesarios para la sesión)
+  await sb('usuarios',{
+    method:'POST',
+    body:{
+      nombre_completo:nombre,
+      email,
+      password_hash:hash,
+      seccion:'general'
+    },
+    headers:{Prefer:'return=minimal'}
+  });
   const createdRows = await sb('usuarios',{query:{select:'id,nombre_completo,email',email:`eq.${email}`,limit:1}});
   const user=createdRows && createdRows[0];
   if(!user){
@@ -1305,7 +1253,6 @@ async function registerHandler(e){
   await fetchProgress();
   showModules();
  }catch(err){
-  // Si hay conflicto por email único
   if(err && err.status===409){
     console.warn('Email ya registrado');
   }
@@ -1338,4 +1285,5 @@ function restoreUI(){loadSession();if(currentUser){showAvatar()}else{showAuth()}
 registerForm.addEventListener('submit',registerHandler);loginForm.addEventListener('submit',loginHandler);handleTabs();handleAvatar();handleCTA();handleModal();handleHelp();restoreUI();
 setupLiquidHover();
 setupGlobalGlow();
+
 
