@@ -9,7 +9,6 @@ function initialsFrom(name){return name.trim().split(/\s+/).map(p=>p[0]?.toUpper
 async function sha256(t){const enc=new TextEncoder().encode(t);const h=await crypto.subtle.digest('SHA-256',enc);return Array.from(new Uint8Array(h)).map(b=>b.toString(16).padStart(2,'0')).join('')}
 async function sb(path,{method='GET',body,headers,query}={}){
   const q=query?"?"+new URLSearchParams(query).toString():"";
-  // Default Prefer to minimal for mutating requests unless explicitly overridden
   const isMutating = method && method.toUpperCase() !== 'GET';
   const defaultPrefer = isMutating ? 'return=minimal' : 'return=representation';
   const finalHeaders = {
