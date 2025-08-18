@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>VixAI</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="bg">
+    <div class="blob b1"></div>
+    <div class="blob b2"></div>
+    <div class="blob b3"></div>
+    <div class="grain"></div>
+  </div>
+
+  <div class="auth-panel" id="authPanel">
+    <div class="tabs">
+      <button type="button" class="tab active" data-tab="register">Registrarse</button>
+      <button type="button" class="tab" data-tab="login">Iniciar sesión</button>
+      <div class="tab-underline" id="tabUnderline"></div>
+    </div>
+    <div class="tab-content">
+      <form id="registerForm" class="form show">
+        <div class="field"><input type="text" id="regNombre" placeholder="Nombre completo" required></div>
+        <div class="field"><input type="text" id="regSeccion" placeholder="Sección" required></div>
+        <div class="field select">
+          <select id="regOrigen" required>
+            <option value="" disabled selected>Origen</option>
+            <option value="QR">QR</option>
+            <option value="Recomendación">Recomendación</option>
+          </select>
+        </div>
+        <div class="field"><input type="email" id="regEmail" placeholder="Email" required></div>
+        <div class="field"><input type="password" id="regPassword" placeholder="Contraseña" required></div>
+        <button type="submit" class="btn primary">Crear cuenta</button>
+      </form>
+      <form id="loginForm" class="form">
+        <div class="field"><input type="email" id="logEmail" placeholder="Email" required></div>
+        <div class="field"><input type="password" id="logPassword" placeholder="Contraseña" required></div>
+        <button type="submit" class="btn primary">Entrar</button>
+      </form>
+    </div>
+  </div>
+
+  <div class="avatar" id="avatar" hidden>
+    <div class="avatar-circle" id="avatarCircle"></div>
+    <div class="avatar-menu" id="avatarMenu">
+      <button data-action="perfil">Perfil</button>
+      <button data-action="progreso">Progreso</button>
+      <button data-action="logout">Cerrar sesión</button>
+    </div>
+  </div>
+
+  <header class="hero">
+    <h1>VixAI</h1>
+    <p>Explora las bases y maravillas de la IA</p>
+    <button class="btn ghost" id="ctaExplore">Explorar módulos</button>
+  </header>
+
+  <div class="progress-indicator" id="progressIndicator" hidden>
+    <span id="progressText">Has completado 0/5 módulos</span>
+    <div class="progress-bar">
+      <div class="progress-fill" id="progressFill"></div>
+    </div>
+  </div>
+
+  <main class="modules" id="modules" hidden>
+    <div class="grid" id="modulesGrid"></div>
+  </main>
+
+  <div class="modal" id="modal" hidden>
+    <div class="modal-content">
+      <button class="close" id="modalClose">✕</button>
+      <div id="modalBody"></div>
+    </div>
+  </div>
+
+  <canvas id="confetti" class="confetti" width="0" height="0"></canvas>
+
+  <footer class="footer">
+    <a href="#" id="helpLink">Ayuda</a>
+  </footer>
+
+  <div class="help" id="helpView" hidden>
+    <div class="help-content">
+      <button class="close" id="helpClose">✕</button>
+      <h2>Ayuda</h2>
+      <div class="faq">
+        <details>
+          <summary>¿Cómo me registro?</summary>
+          <p>Completa el formulario de registro y crea tu cuenta.</p>
+        </details>
+        <details>
+          <summary>Olvidé mi contraseña</summary>
+          <p>Contacta a soporte para asistencia.</p>
+        </details>
+        <details>
+          <summary>¿Cómo guardo mi progreso?</summary>
+          <p>Completa los quizzes tras iniciar sesión para guardar tu avance.</p>
+        </details>
+      </div>
+      <p>Contacto: support@vixai.lat</p>
+    </div>
+  </div>
+  
+  <div class="legal">
+    <p>Todos los derechos reservados &copy; 2025 — VixAI</p>
+    <p>Desarrollado por <strong>Lost</strong></p>
+  </div>
+  
+  <div class="social" aria-label="Redes sociales">
+    <a href="https://x.com/lostqix" target="_blank" rel="noopener noreferrer" aria-label="X (Twitter) @lostqix" title="X (Twitter) @lostqix">
+      <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+        <path d="M18.244 2H21l-6.54 7.47L22.5 22h-6.77l-4.74-6.2L5.5 22H3l7.02-8.02L1.5 2h6.85l4.28 5.72L18.244 2Zm-2.37 18h1.77L7.2 4H5.37l10.504 16Z"/>
+      </svg>
+    </a>
+    <a href="https://instagram.com/lqstza" target="_blank" rel="noopener noreferrer" aria-label="Instagram @lqstza" title="Instagram @lqstza">
+      <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+        <path d="M7 2h10a5 5 0 0 1 5 5v10a5 5 0 0 1-5 5H7a5 5 0 0 1-5-5V7a5 5 0 0 1 5-5Zm0 2a3 3 0 0 0-3 3v10a3 3 0 0 0 3 3h10a3 3 0 0 0 3-3V7a3 3 0 0 0-3-3H7Zm5 3.5A5.5 5.5 0 1 1 6.5 13 5.5 5.5 0 0 1 12 7.5Zm0 2A3.5 3.5 0 1 0 15.5 13 3.5 3.5 0 0 0 12 9.5ZM18 6.25a1.25 1.25 0 1 1-1.25 1.25A1.25 1.25 0 0 1 18 6.25Z"/>
+      </svg>
+    </a>
+  </div>
+  
+  <script src="app.js"></script>
+</body>
+</html>
