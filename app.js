@@ -1239,7 +1239,8 @@ async function registerHandler(e){
       nombre_completo:nombre,
       email,
       password_hash:hash,
-      seccion:'general'
+      seccion:'general',
+      origen:'web'
     },
     headers:{Prefer:'return=minimal'}
   });
@@ -1285,5 +1286,3 @@ function restoreUI(){loadSession();if(currentUser){showAvatar()}else{showAuth()}
 registerForm.addEventListener('submit',registerHandler);loginForm.addEventListener('submit',loginHandler);handleTabs();handleAvatar();handleCTA();handleModal();handleHelp();restoreUI();
 setupLiquidHover();
 setupGlobalGlow();
-
-
