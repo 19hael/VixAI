@@ -7,7 +7,8 @@ let currentUser=null;let userProgress=new Set();
 function moveUnderline(){const active=document.querySelector('.tab.active');if(!active)return;const r=active.getBoundingClientRect();const container=active.parentElement.getBoundingClientRect();tabUnderline.style.width=r.width+"px";tabUnderline.style.left=(r.left-container.left)+"px"}
 window.addEventListener('resize',moveUnderline)
 window.addEventListener('orientationchange',moveUnderline)
-function toggleAuthPanel(){authPanel.classList.toggle('collapsed');authMin.textContent=authPanel.classList.contains('collapsed')?'+':'–';if(!authPanel.classList.contains('collapsed'))moveUnderline()}
+function toggleAuthPanel(){authPanel.classList.toggle('collapsed');const c=authPanel.classList.contains('collapsed');authMin.textContent=c?'+':'–';authMin.setAttribute('aria-expanded',(!c).toString());authMin.setAttribute('aria-label',c?'Expandir':'Minimizar');if(!c)moveUnderline()}
+if(authMin){authMin.setAttribute('aria-expanded','true');authMin.setAttribute('aria-label','Minimizar')}
 if(authMin)authMin.addEventListener('click',toggleAuthPanel)
 function switchTab(name){tabs.forEach(b=>b.classList.toggle('active',b.dataset.tab===name));$$(".form").forEach(f=>f.classList.remove('show'));if(name==='register')registerForm.classList.add('show');else loginForm.classList.add('show');moveUnderline()}
 function initialsFrom(name){return name.trim().split(/\s+/).map(p=>p[0]?.toUpperCase()).slice(0,2).join('')||'U'}
