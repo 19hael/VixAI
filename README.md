@@ -1,4 +1,6 @@
-LOGO: VixAI.png
+<p align="center">
+   <img src="VixAI.png" alt="VixAI logo" width="160">
+ </p>
 
 NOMBRE DEL PROYECTO
 VixAI — Plataforma educativa introductoria sobre Inteligencia Artificial
