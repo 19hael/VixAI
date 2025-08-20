@@ -1,84 +1,140 @@
-# VixAI
+LOGO: VixAI.png
 
-Explora las bases y maravillas de la IA en una experiencia web elegante, responsiva y accesible. Incluye registro/inicio de sesión simulado, módulos con progreso, modal de ayuda, confeti de celebración, enlaces sociales y sección legal.
+NOMBRE DEL PROYECTO
+VixAI — Plataforma educativa introductoria sobre Inteligencia Artificial
 
-## Características
+DESCRIPCIÓN GENERAL
+VixAI es una aplicación web estática (HTML + CSS + JavaScript sin frameworks) orientada a enseñar conceptos fundamentales de IA mediante módulos temáticos con contenido teórico, prácticas interactivas y cuestionarios (quizzes). La app incluye registro e inicio de sesión de usuarios, persistencia de progreso local y sincronización opcional con una base de datos en Supabase mediante su API REST (PostgREST).
 
-- Autenticación UI con pestañas: registro e inicio de sesión ([index.html](cci:7://file:///c:/Users/Hael/Desktop/Proyectos%20VSCODE/ACTIVOS/VixAI/index.html:0:0-0:0), [styles.css](cci:7://file:///c:/Users/Hael/Desktop/Proyectos%20VSCODE/ACTIVOS/VixAI/styles.css:0:0-0:0), `app.js`).
-- Indicador de progreso con barra animada.
-- Grid de módulos responsivo.
-- Modal de contenido con pestañas internas y quiz básico.
-- Efectos visuales modernos: fondo con blobs, grain, glassmorphism y confeti.
-- Footer con acceso a ayuda.
-- Botonera fija de redes sociales (X/Twitter e Instagram) abajo a la izquierda.
-- Sección legal con copyright y crédito de autor.
-- Totalmente responsivo: móvil, tablet y desktop, con soporte para áreas seguras (notch).
+ESTRUCTURA DEL REPOSITORIO
+- index.html: Documento principal y punto de entrada de la aplicación.
+- styles.css: Estilos globales, diseño responsivo, efectos visuales y componentes UI.
+- app.js: Lógica de negocio y de interfaz (autenticación, módulos, progreso, modales, quizzes, etc.).
+- LOGO/VixAI.png: Logotipo utilizado para identidad visual del proyecto.
 
-## Estructura del proyecto
+VISIÓN ARQUITECTÓNICA (ALTO NIVEL)
+- Capa de Presentación (HTML/CSS):
+  - index.html define la estructura de la página: panel de autenticación, encabezado (hero), grilla de módulos, modal de contenido, indicadores de progreso, ayuda y secciones legales/sociales.
+  - styles.css gestiona tema oscuro, efectos de fondo (blobs, grano), componentes con blur, estados interactivos, layout responsivo y accesibilidad visual.
+- Capa de Lógica de Cliente (JavaScript en app.js):
+  - Manejo de autenticación manual utilizando tablas personalizadas en Supabase (sin SDK, vía fetch y PostgREST).
+  - Gestión de estado de sesión y progreso en localStorage.
+  - Renderizado dinámico de módulos, apertura de modales y verificación de quizzes.
+  - Feedback visual (confeti), microinteracciones (shake/pulse), y efectos de UI globales.
+- Capa de Persistencia (Remota y Local):
+  - Remota: Supabase REST (tablas usuarios y progreso).
+  - Local: localStorage para usuario activo y progreso por módulo.
 
-- [index.html](cci:7://file:///c:/Users/Hael/Desktop/Proyectos%20VSCODE/ACTIVOS/VixAI/index.html:0:0-0:0): estructura principal de la UI, modales, footer, sección legal y enlaces sociales.
-- [styles.css](cci:7://file:///c:/Users/Hael/Desktop/Proyectos%20VSCODE/ACTIVOS/VixAI/styles.css:0:0-0:0): estilos globales, glassmorphism, animaciones, responsive y safe-area.
-- `app.js`: lógica de tabs, formularios, modales, progreso y efectos (como confeti).
+DETALLE DE COMPONENTES Y FLUJOS CLAVE
+1) Autenticación y Sesión
+   - Variables de entorno en cliente: SUPABASE_URL y SUPABASE_KEY definidas al inicio de app.js.
+   - Función sb(path, options): Helper para invocar PostgREST con fetch, arma cabeceras (apikey, Authorization Bearer, Content-Type, Prefer) y maneja errores.
+   - Registro (registerHandler):
+     - Valida campos y longitud mínima de contraseña.
+     - Verifica existencia de email en tabla usuarios.
+     - Calcula hash SHA-256 del password en el cliente y envía a Supabase como password_hash.
+     - Inserta el usuario intentando diversos valores para el campo origen (app, landing, organic, direct, unknown) para cumplir posibles restricciones CHECK del esquema. Si un valor no pasa la validación (HTTP 400 con mensaje sobre origen/check), prueba el siguiente.
+     - Tras crear, recupera la fila creada (id, nombre_completo, email), guarda sesión en localStorage y muestra la UI de usuario logueado.
+   - Inicio de sesión (loginHandler):
+     - Obtiene email y password, calcula hash SHA-256 en cliente.
+     - Consulta en usuarios por email y compara password_hash. Si coincide, persiste sesión y carga progreso.
+   - Sesión en cliente:
+     - saveSession(u), loadSession(), clearSession(): administran currentUser en localStorage bajo la clave vixai_user.
+     - showAvatar() / showAuth(): alternan visibilidad entre panel de autenticación y avatar de usuario.
 
-## Tecnologías
+2) Módulos de Aprendizaje (Contenido, Prácticas y Quiz)
+   - Definición estática en app.js mediante el arreglo modules: Lista de 5 módulos (p. ej., “¿Qué es la IA?”, “Datos y modelos”, “Entrenamiento”, “Producción y MLOps”, “Ética en IA”). Cada módulo contiene descripción y preguntas de quiz.
+   - Renderizado de la grilla (renderGrid): Genera tarjetas con estado “Completado/Pendiente” según userProgress.
+   - Apertura de módulos (openModule): Crea contenido en un modal, con pestañas internas (Contenido, Prácticas, Quiz), y listeners específicos por módulo (handleM1Logic, handleM2Logic, etc.).
+   - Validaciones de prácticas y quizzes: Se evalúan en el cliente. Al aprobar el quiz (umbral típico 80%), se invoca markCompleted(id), se cierra el modal, se dispara celebrate() (confeti), y se actualiza la UI de progreso.
 
-- HTML5
-- CSS3 (animaciones, filtros, grid/flex, safe-area)
-- JavaScript (vanilla)
+3) Progreso del Usuario
+   - Estructura local: userProgress (Set en memoria) persistido como arreglo en localStorage bajo la clave vixai_progress.
+   - markCompleted(moduleId):
+     - Añade el módulo al Set, sincroniza en localStorage.
+     - Si hay usuario autenticado, intenta registrar progreso en Supabase (tabla progreso) con { usuario_id, módulo, completado: true }.
+   - fetchProgress():
+     - Restaura progreso desde localStorage.
+     - Si hay usuario autenticado, consulta en Supabase por el usuario y fusiona los módulos con completado = true a userProgress.
+   - updateProgressUI():
+     - Cálculo simple del avance (completados/5) y animación de barra de progreso.
 
-## Responsive y Accesibilidad
+4) Interfaz de Usuario y Experiencia
+   - Autenticación:
+     - Panel flotante con pestañas “Registrarse / Iniciar sesión”, minimizable con transición (toggleAuthPanel) y subrayado animado (moveUnderline).
+   - Navegación principal:
+     - Hero (título, subtítulo, CTA “Explorar módulos”).
+     - Indicador de progreso fijo.
+     - Grilla de tarjetas de módulos.
+   - Modales de contenido:
+     - Ventana con scroll, cierre vía botón o click en overlay, y layout para contenido, prácticas y quiz.
+   - Avatar y menú contextual:
+     - Muestra iniciales a partir de nombre o email (initialsFrom).
+     - Menú con acciones: Perfil, Progreso y Cerrar sesión.
+   - Ayuda y sección legal/social:
+     - Vista de ayuda con FAQs básicas.
+     - Créditos y enlaces sociales.
+   - Accesibilidad y microinteracciones:
+     - Estados hover/focus, tamaños mínimos, animaciones con prefers-reduced-motion.
+     - Efectos visuales: blobs, grano, resplandores, confeti (setupConfetti/celebrate).
 
-- Breakpoints para móvil (≤600px), tablet (600–900px) y medianas (900–1200px).
-- Safe area: `env(safe-area-inset-bottom)` aplicado a `footer`, `.social`, `.modules` y `.legal`.
-- Objetivos táctiles mínimos de 44px en botones, enlaces del footer e iconos sociales.
-- `aria-label` en iconos y enlaces sociales; `rel="noopener noreferrer"` en enlaces externos.
+5) Persistencia y Backend (Supabase)
+   - Acceso vía REST: No se usa SDK oficial; todas las operaciones son fetch a PostgREST con helper sb().
+   - Tablas esperadas (derivadas del código):
+     - usuarios: id, nombre_completo, email, password_hash, seccion, origen.
+       • Reglas implícitas: email único; origen sujeto a restricción CHECK (por eso se prueban valores alternativos en el registro).
+     - progreso: usuario_id, módulo (nota: el campo se utiliza con acento en consultas: "módulo"), completado (boolean).
+   - Seguridad:
+     - Se usa SUPABASE_KEY “anon” en el cliente para consultas/insert. Las Reglas RLS deben permitir el patrón de acceso previsto (lectura de usuario por email, escritura de progreso del usuario autenticado, etc.). Se recomienda endurecer RLS y evitar exponer operaciones sensibles.
 
-## Enlaces sociales
+6) Almacenamiento Local (localStorage)
+   - vixai_user: JSON con datos mínimos del usuario autenticado.
+   - vixai_progress: Arreglo con IDs de módulos completados.
+   - También se utilizan claves específicas por módulo para marcar contenidos como “leídos”.
 
-- X (Twitter): https://x.com/lostqix
-- Instagram: https://instagram.com/lqstza
+7) Estilos y Responsividad (styles.css)
+   - Tema oscuro, capas de fondo con blobs y grano, gradientes y blur.
+   - Componentes:
+     • Botones (primary/ghost), badges, tarjetas, modales, tabs internas de módulos, quiz.
+     • Panel de autenticación colapsable.
+     • Indicador de progreso con barra animada.
+   - Breakpoints y consideraciones mobile (incluye safe-area-inset-bottom).
+   - Accesibilidad visual: contraste, tamaños, hover/focus, preferencia de reducción de movimiento.
 
-## Sección legal
+8) Inicialización y Ciclo de Vida (app.js)
+   - restoreUI(): Carga sesión; si hay usuario, muestra avatar y, tras fetchProgress(), despliega módulos.
+   - Registro de listeners globales: formularios (register/login), tabs, avatar, CTA, modal, ayuda y efectos globales (setupLiquidHover, setupGlobalGlow).
+   - Manejo de errores: sb() registra errores con console.error, y en UI se usan animaciones (shake/pulse) como feedback.
 
-- “Todos los derechos reservados © 2025 — VixAI”
-- “Desarrollado por Lost”
+9) Requisitos y Puesta en Marcha
+   - No requiere build ni dependencias externas para UI: abrir index.html en un servidor estático o entorno local que permita fetch hacia SUPABASE_URL.
+   - Configurar correctamente SUPABASE_URL y SUPABASE_KEY (actualmente en app.js) y garantizar CORS en el proyecto de Supabase.
+   - Esquema en Supabase:
+     • Tabla usuarios: columnas id (uuid/int), nombre_completo (text), email (text, único), password_hash (text), seccion (text), origen (text con CHECK).
+     • Tabla progreso: columnas usuario_id (fk hacia usuarios), "módulo" (int con comillas por acento si se usa tal nombre), completado (boolean).
+   - Reglas RLS recomendadas (no exhaustivo):
+     • usuarios: permitir select por email para registro/login; insert restringido; no exponer password_hash salvo lo estrictamente necesario (idealmente no devolverlo).
+     • progreso: permitir insert y select sólo del usuario propietario (match por usuario_id).
 
-## Cómo ejecutar localmente
+10) Consideraciones de Seguridad
+   - Hash de contraseñas en cliente (SHA-256) no sustituye un esquema robusto de autenticación. En producción, preferir Auth de Supabase u otro sistema con manejo de salt/pepper y verificación del lado servidor.
+   - SUPABASE_KEY “anon” expuesto en cliente: normal en apps públicas, pero requiere RLS estrictas y scopes mínimos.
+   - Evitar campos con acentos en nombres de columnas por ergonomía (si ya existen, siempre citar "módulo").
 
-1. Clona el repositorio.
-2. Abre [index.html](cci:7://file:///c:/Users/Hael/Desktop/Proyectos%20VSCODE/ACTIVOS/VixAI/index.html:0:0-0:0) directamente en tu navegador, o
-3. Usa una extensión tipo “Live Server” para auto-recarga.
-   - En VS Code: clic derecho sobre [index.html](cci:7://file:///c:/Users/Hael/Desktop/Proyectos%20VSCODE/ACTIVOS/VixAI/index.html:0:0-0:0) → “Open with Live Server”.
+11) Mantenimiento y Extensibilidad
+   - Añadir módulos: extender el arreglo modules y definir funciones de contenido/quiz análogas a las existentes (moduleXContent, handleMXLogic).
+   - Internacionalización: separar strings en una estructura central para admitir múltiples idiomas.
+   - Telemetría/analítica: agregar capa opcional respetando privacidad.
+   - Pruebas: automatizar validaciones de quizzes y flujos de UI con herramientas E2E si se desea.
 
-No se requieren dependencias ni build.
+12) Créditos y Contacto
+   - Derechos reservados © 2025 — VixAI.
+   - Desarrollado por Lost.
+   - Soporte: support@vixai.lat.
+   - Redes sociales en la UI: X (Twitter) @lostqix, Instagram @lqstza.
 
-## Despliegue (GitHub Pages)
-
-1. En GitHub, ve a Settings → Pages.
-2. Source: selecciona `main` (o la rama que uses) y carpeta `/root`.
-3. Guarda. La página quedará disponible con la URL de GitHub Pages.
-
-## Personalización rápida
-
-- Colores y estilo: editar en [styles.css](cci:7://file:///c:/Users/Hael/Desktop/Proyectos%20VSCODE/ACTIVOS/VixAI/styles.css:0:0-0:0) (gradientes, blur, radios, etc.).
-- Módulos y contenido del modal: actualizar HTML en [index.html](cci:7://file:///c:/Users/Hael/Desktop/Proyectos%20VSCODE/ACTIVOS/VixAI/index.html:0:0-0:0) y lógica en `app.js`.
-- Enlaces sociales: modificar URLs en la sección `.social` de [index.html](cci:7://file:///c:/Users/Hael/Desktop/Proyectos%20VSCODE/ACTIVOS/VixAI/index.html:0:0-0:0).
-- Textos de ayuda/FAQ: sección `#helpView` en [index.html](cci:7://file:///c:/Users/Hael/Desktop/Proyectos%20VSCODE/ACTIVOS/VixAI/index.html:0:0-0:0).
-
-## Roadmap
-
-- Integrar autenticación real (API/Backend).
-- Persistir progreso por usuario (LocalStorage/Backend).
-- Más módulos y evaluaciones.
-- Tema claro/oscuro con toggle.
-- Tests básicos de UI.
-
-## Contribuir
-
-1. Haz un fork del proyecto.
-2. Crea una rama (`feat/mi-mejora`).
-3. Abre un Pull Request con descripción clara.
-
-## Licencia
-
-Este proyecto se distribuye con todos los derechos reservados. Para usos distintos, solicita autorización al autor.
+INSTRUCCIONES DE USO BÁSICO
+1. Abrir index.html en un navegador moderno.
+2. Registrarse o iniciar sesión.
+3. Explorar módulos, leer contenidos, completar prácticas y aprobar quizzes.
+4. Visualizar el progreso y, si hay sesión activa, sincronizar con Supabase automáticamente.
