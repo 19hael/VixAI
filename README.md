@@ -1,5 +1,5 @@
 <p align="center">
-   <img src="VixAI.png" alt="VixAI logo" width="320">
+   <img src="VixAI.png" alt="VixAI logo" width="670">
  </p>
 
 NOMBRE DEL PROYECTO
