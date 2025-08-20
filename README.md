@@ -1,32 +1,40 @@
 <p align="center">
    <img src="VixAI.png" alt="VixAI logo" width="670">
  </p>
+ 
+ <h1 align="center">VixAI</h1>
+ <p align="center"><em>Plataforma educativa introductoria sobre Inteligencia Artificial</em></p>
+ 
+ <p align="center">
+   <a href="#"><img src="https://img.shields.io/badge/stack-HTML%20%7C%20CSS%20%7C%20JavaScript-6b46ff?style=for-the-badge" alt="Stack"></a>
+   <a href="#"><img src="https://img.shields.io/badge/status-Activa-3aa0ff?style=for-the-badge" alt="Status"></a>
+   <a href="#"><img src="https://img.shields.io/badge/supabase-REST-00c389?style=for-the-badge&logo=supabase&logoColor=white" alt="Supabase"></a>
+ </p>
+ 
+ 
+ ## Descripción general
+ VixAI es una aplicación web estática (HTML + CSS + JavaScript sin frameworks) orientada a enseñar conceptos fundamentales de IA mediante módulos temáticos con contenido teórico, prácticas interactivas y cuestionarios (quizzes). La app incluye registro e inicio de sesión de usuarios, persistencia de progreso local y sincronización opcional con una base de datos en Supabase mediante su API REST (PostgREST).
+ 
+ ## Estructura del repositorio
+ - index.html: Documento principal y punto de entrada de la aplicación.
+ - styles.css: Estilos globales, diseño responsivo, efectos visuales y componentes UI.
+ - app.js: Lógica de negocio y de interfaz (autenticación, módulos, progreso, modales, quizzes, etc.).
+ - LOGO/VixAI.png: Logotipo utilizado para identidad visual del proyecto.
+ 
+ ## Visión arquitectónica (alto nivel)
+ - Capa de Presentación (HTML/CSS):
+   - index.html define la estructura de la página: panel de autenticación, encabezado (hero), grilla de módulos, modal de contenido, indicadores de progreso, ayuda y secciones legales/sociales.
+   - styles.css gestiona tema oscuro, efectos de fondo (blobs, grano), componentes con blur, estados interactivos, layout responsivo y accesibilidad visual.
+ - Capa de Lógica de Cliente (JavaScript en app.js):
+   - Manejo de autenticación manual utilizando tablas personalizadas en Supabase (sin SDK, vía fetch y PostgREST).
+   - Gestión de estado de sesión y progreso en localStorage.
+   - Renderizado dinámico de módulos, apertura de modales y verificación de quizzes.
+   - Feedback visual (confeti), microinteracciones (shake/pulse), y efectos de UI globales.
+ - Capa de Persistencia (Remota y Local):
+   - Remota: Supabase REST (tablas usuarios y progreso).
+   - Local: localStorage para usuario activo y progreso por módulo.
 
-VixAI — Plataforma educativa introductoria sobre Inteligencia Artificial
-
-DESCRIPCIÓN GENERAL
-VixAI es una aplicación web estática (HTML + CSS + JavaScript sin frameworks) orientada a enseñar conceptos fundamentales de IA mediante módulos temáticos con contenido teórico, prácticas interactivas y cuestionarios (quizzes). La app incluye registro e inicio de sesión de usuarios, persistencia de progreso local y sincronización opcional con una base de datos en Supabase mediante su API REST (PostgREST).
-
-ESTRUCTURA DEL REPOSITORIO
-- index.html: Documento principal y punto de entrada de la aplicación.
-- styles.css: Estilos globales, diseño responsivo, efectos visuales y componentes UI.
-- app.js: Lógica de negocio y de interfaz (autenticación, módulos, progreso, modales, quizzes, etc.).
-- LOGO/VixAI.png: Logotipo utilizado para identidad visual del proyecto.
-
-VISIÓN ARQUITECTÓNICA (ALTO NIVEL)
-- Capa de Presentación (HTML/CSS):
-  - index.html define la estructura de la página: panel de autenticación, encabezado (hero), grilla de módulos, modal de contenido, indicadores de progreso, ayuda y secciones legales/sociales.
-  - styles.css gestiona tema oscuro, efectos de fondo (blobs, grano), componentes con blur, estados interactivos, layout responsivo y accesibilidad visual.
-- Capa de Lógica de Cliente (JavaScript en app.js):
-  - Manejo de autenticación manual utilizando tablas personalizadas en Supabase (sin SDK, vía fetch y PostgREST).
-  - Gestión de estado de sesión y progreso en localStorage.
-  - Renderizado dinámico de módulos, apertura de modales y verificación de quizzes.
-  - Feedback visual (confeti), microinteracciones (shake/pulse), y efectos de UI globales.
-- Capa de Persistencia (Remota y Local):
-  - Remota: Supabase REST (tablas usuarios y progreso).
-  - Local: localStorage para usuario activo y progreso por módulo.
-
-DETALLE DE COMPONENTES Y FLUJOS CLAVE
+ ## DETALLE DE COMPONENTES Y FLUJOS CLAVE
 1) Autenticación y Sesión
    - Variables de entorno en cliente: SUPABASE_URL y SUPABASE_KEY definidas al inicio de app.js.
    - Función sb(path, options): Helper para invocar PostgREST con fetch, arma cabeceras (apikey, Authorization Bearer, Content-Type, Prefer) y maneja errores.
