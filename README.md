@@ -141,6 +141,7 @@
    - Desarrollado por Lost.
    - Soporte: support@vixai.lat.
    - Redes sociales en la UI: X (Twitter) @lostqix, Instagram @lqstza.
+   - Pagina Web: vixai.lat
 
 INSTRUCCIONES DE USO BÁSICO
 1. Abrir index.html en un navegador moderno.
