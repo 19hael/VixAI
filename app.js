@@ -1,6 +1,6 @@
 const SUPABASE_URL="https://bpzxkohrdvcpxhurvock.supabase.co";const SUPABASE_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJwenhrb2hyZHZjcHhodXJ2b2NrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTU0MTUzNjcsImV4cCI6MjA3MDk5MTM2N30.6vQZDoNbAYL-HyZ1jvY9D0_8WN6p6hN6CLfAnvElMVA";
 const $=s=>document.querySelector(s);const $$=s=>document.querySelectorAll(s);
-const authPanel=$("#authPanel");const tabs=$$(".tab");const tabUnderline=$("#tabUnderline");const registerForm=$("#registerForm");const loginForm=$("#loginForm");const avatar=$("#avatar");const avatarCircle=$("#avatarCircle");const avatarMenu=$("#avatarMenu");const hero=$(".hero");const ctaExplore=$("#ctaExplore");const modulesView=$("#modules");const modulesGrid=$("#modulesGrid");const modal=$("#modal");const modalBody=$("#modalBody");const modalClose=$("#modalClose");const progressIndicator=$("#progressIndicator");const progressText=$("#progressText");const progressFill=$("#progressFill");const helpLink=$("#helpLink");const helpView=$("#helpView");const helpClose=$("#helpClose");const confettiCanvas=$("#confetti");
+const authPanel=$("#authPanel");const tabs=$$(".tab");const tabUnderline=$("#tabUnderline");const registerForm=$("#registerForm");const loginForm=$("#loginForm");const avatar=$("#avatar");const avatarCircle=$("#avatarCircle");const avatarMenu=$("#avatarMenu");const hero=$(".hero");const heroAuth=$('.hero-auth-actions');const ctaExplore=$("#ctaExplore");const modulesView=$("#modules");const modulesGrid=$("#modulesGrid");const modal=$("#modal");const modalBody=$("#modalBody");const modalClose=$("#modalClose");const progressIndicator=$("#progressIndicator");const progressText=$("#progressText");const progressFill=$("#progressFill");const helpLink=$("#helpLink");const helpView=$("#helpView");const helpClose=$("#helpClose");const confettiCanvas=$("#confetti");
 const heroLoginBtn=$('#heroLoginBtn');
 const heroRegisterBtn=$('#heroRegisterBtn');
 const modules=[{id:1,title:"¿Qué es la IA?",desc:"Conceptos clave y aplicaciones actuales.",quiz:[{q:"La IA se refiere a:",o:["Un lenguaje de programación","Sistemas que realizan tareas que requieren inteligencia humana","Un tipo de base de datos"],a:1},{q:"Un ejemplo cotidiano de IA es:",o:["Un lápiz","Un semáforo","Un asistente de voz"],a:2}]},{id:2,title:"Datos y modelos",desc:"Cómo los datos dan forma a los modelos.",quiz:[{q:"El sobreajuste ocurre cuando:",o:["El modelo generaliza bien","El modelo memoriza el conjunto de entrenamiento","No hay suficientes características"],a:1},{q:"La validación cruzada se usa para:",o:["Acelerar el entrenamiento","Evaluar desempeño generalizable","Reducir el tamaño del dataset"],a:1}]},{id:3,title:"Entrenamiento",desc:"Proceso de optimización y evaluación.",quiz:[{q:"La función de pérdida sirve para:",o:["Medir el error del modelo","Almacenar datos","Visualizar resultados"],a:0},{q:"El aprendizaje por lotes implica:",o:["Actualizar después de cada ejemplo","Actualizar con grupos de ejemplos","No actualizar parámetros"],a:1},{q:"La tasa de aprendizaje controla:",o:["El tamaño del paso en la optimización","La cantidad de datos","El número de clases"],a:0}]},{id:4,title:"Producción y MLOps",desc:"Despliegue, monitoreo y ciclo de vida.",quiz:[{q:"El monitoreo en producción busca:",o:["Reducir el almacenamiento","Detectar deriva y problemas","Aumentar el consumo energético"],a:1},{q:"CI/CD en MLOps ayuda a:",o:["Automatizar integraciones y despliegues","Entrenar más lento","Eliminar pruebas"],a:0}]},{id:5,title:"Ética en IA",desc:"Sesgos, transparencia y responsabilidad.",quiz:[{q:"Un riesgo ético común es:",o:["Mayor exactitud","Sesgo en datos","Menos latencia"],a:1},{q:"La explicabilidad ayuda a:",o:["Ocultar decisiones","Entender decisiones del modelo","Borrar datos"],a:1}]}];
@@ -10,6 +10,7 @@ window.addEventListener('resize',moveUnderline)
 window.addEventListener('orientationchange',moveUnderline)
 function openAuth(name){
   showAuth();
+  authPanel.hidden=false;
   authPanel.classList.remove('collapsed');
   authPanel.style.top='50%';
   authPanel.style.left='50%';
@@ -19,6 +20,10 @@ function openAuth(name){
   authPanel.style.maxHeight='86vh';
   switchTab(name);
   moveUnderline();
+  authPanel.animate([
+    {opacity:0, transform:'translate(-50%, -48%) scale(.98)'},
+    {opacity:1, transform:'translate(-50%, -50%) scale(1)'}
+  ],{duration:260,easing:'cubic-bezier(.2,.65,.3,1)'});
 }
 function switchTab(name){tabs.forEach(b=>b.classList.toggle('active',b.dataset.tab===name));$$(".form").forEach(f=>f.classList.remove('show'));if(name==='register')registerForm.classList.add('show');else loginForm.classList.add('show');moveUnderline()}
 function initialsFrom(name){return name.trim().split(/\s+/).map(p=>p[0]?.toUpperCase()).slice(0,2).join('')||'U'}
@@ -59,9 +64,17 @@ async function sb(path,{method='GET',body,headers,query}={}){
 function saveSession(u){currentUser=u;localStorage.setItem('vixai_user',JSON.stringify(u))}
 function loadSession(){try{const s=localStorage.getItem('vixai_user');if(s){currentUser=JSON.parse(s)}}catch{}}
 function clearSession(){currentUser=null;localStorage.removeItem('vixai_user')}
-function showAvatar(){authPanel.style.display='none';avatar.hidden=false;avatarCircle.textContent=initialsFrom(currentUser.nombre_completo||currentUser.email)}
-function showAuth(){avatar.hidden=true;avatarMenu.classList.remove('show');authPanel.style.display='block'}
-function nudgeAuth(){authPanel.animate([{transform:'translateY(0)'},{transform:'translateY(3px)'},{transform:'translateY(0)'}],{duration:300})}
+function hideAuthPanel(){
+  if(authPanel.hidden)return;
+  const a=authPanel.animate([
+    {opacity:1, transform:'translate(-50%, -50%) scale(1)'},
+    {opacity:0, transform:'translate(-50%, -48%) scale(.98)'}
+  ],{duration:200,easing:'cubic-bezier(.2,.65,.3,1)'});
+  a.onfinish=()=>{authPanel.hidden=true};
+}
+function showAvatar(){hideAuthPanel();avatar.hidden=false;if(heroAuth)heroAuth.style.display='none';avatarCircle.textContent=initialsFrom(currentUser.nombre_completo||currentUser.email)}
+function showAuth(){avatar.hidden=true;avatarMenu.classList.remove('show');authPanel.hidden=true;if(heroAuth)heroAuth.style.display=''}
+function nudgeAuth(){if(heroAuth){heroAuth.animate([{transform:'translateY(0)'},{transform:'translateY(3px)'},{transform:'translateY(0)'}],{duration:300})}}
 function renderGrid(){modulesGrid.innerHTML='';modules.forEach(m=>{const card=document.createElement('div');card.className='card';const done=userProgress.has(m.id);card.innerHTML=`<h3>${m.title}</h3><p>${m.desc}</p><div class="card-actions"><span class="badge">${done?"Completado":"Pendiente"}</span><button class="open-btn" data-id="${m.id}">Abrir</button></div>`;modulesGrid.appendChild(card)});$$('.open-btn').forEach(b=>b.addEventListener('click',e=>openModule(parseInt(e.currentTarget.dataset.id))))}
 function updateProgressUI(){const completed=userProgress.size;progressText.textContent=`Has completado ${completed}/5 módulos`;progressFill.style.width=`${(completed/5)*100}%`}
 function showModules(){modulesView.hidden=false;progressIndicator.hidden=false;renderGrid();updateProgressUI();hero.scrollIntoView({behavior:'smooth',block:'start'})}
@@ -1310,7 +1323,7 @@ function handleTabs(){
   moveUnderline();
 }
 function handleAvatar(){avatarCircle.addEventListener('click',()=>{avatarMenu.classList.toggle('show')});document.addEventListener('click',e=>{if(!avatar.contains(e.target))avatarMenu.classList.remove('show')});avatarMenu.addEventListener('click',e=>{const a=e.target.closest('button')?.dataset.action;if(!a)return;if(a==='logout'){clearSession();userProgress=new Set(JSON.parse(localStorage.getItem('vixai_progress')||'[]'));showAuth();hideModules()}if(a==='perfil'){openModal(`<h3>Perfil</h3><p><strong>Nombre:</strong> ${currentUser?.nombre_completo||'-'}</p><p><strong>Email:</strong> ${currentUser?.email||'-'}</p>`)}if(a==='progreso'){const items=modules.map(m=>`<li>${m.title} — ${userProgress.has(m.id)?'Completado':'Pendiente'}</li>`).join('');openModal(`<h3>Progreso</h3><ul>${items}</ul>`)}avatarMenu.classList.remove('show')})}
-function handleCTA(){ctaExplore.addEventListener('click',()=>{if(currentUser){showModules()}else{nudgeAuth()}})}
+function handleCTA(){ctaExplore.addEventListener('click',()=>{if(currentUser){showModules()}else{openAuth('login')}})}
 function handleModal(){modalClose.addEventListener('click',closeModal);modal.addEventListener('click',e=>{if(e.target===modal)closeModal()})}
 function handleHelp(){helpLink.addEventListener('click',e=>{e.preventDefault();helpView.hidden=false});helpClose.addEventListener('click',()=>helpView.hidden=true);helpView.addEventListener('click',e=>{if(e.target===helpView)helpView.hidden=true})}
 function setupConfetti(){const ctx=confettiCanvas.getContext('2d');function resize(){confettiCanvas.width=innerWidth;confettiCanvas.height=innerHeight}window.addEventListener('resize',resize);resize();let pieces=[];let raf=null;function spawn(n=100){for(let i=0;i<n;i++){pieces.push({x:Math.random()*confettiCanvas.width,y:-20-Math.random()*200,w:6+Math.random()*6,h:10+Math.random()*10,vy:2+Math.random()*3,vx:-2+Math.random()*4,rot:Math.random()*Math.PI,vr:-.2+Math.random()*.4,color:`hsl(${260+Math.random()*60} 90% 60% / ${.6+Math.random()*.4})`})}}
