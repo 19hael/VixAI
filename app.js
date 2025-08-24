@@ -1,15 +1,25 @@
 const SUPABASE_URL="https://bpzxkohrdvcpxhurvock.supabase.co";const SUPABASE_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJwenhrb2hyZHZjcHhodXJ2b2NrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTU0MTUzNjcsImV4cCI6MjA3MDk5MTM2N30.6vQZDoNbAYL-HyZ1jvY9D0_8WN6p6hN6CLfAnvElMVA";
 const $=s=>document.querySelector(s);const $$=s=>document.querySelectorAll(s);
 const authPanel=$("#authPanel");const tabs=$$(".tab");const tabUnderline=$("#tabUnderline");const registerForm=$("#registerForm");const loginForm=$("#loginForm");const avatar=$("#avatar");const avatarCircle=$("#avatarCircle");const avatarMenu=$("#avatarMenu");const hero=$(".hero");const ctaExplore=$("#ctaExplore");const modulesView=$("#modules");const modulesGrid=$("#modulesGrid");const modal=$("#modal");const modalBody=$("#modalBody");const modalClose=$("#modalClose");const progressIndicator=$("#progressIndicator");const progressText=$("#progressText");const progressFill=$("#progressFill");const helpLink=$("#helpLink");const helpView=$("#helpView");const helpClose=$("#helpClose");const confettiCanvas=$("#confetti");
-const authMin=$("#authMin");
+const heroLoginBtn=$('#heroLoginBtn');
+const heroRegisterBtn=$('#heroRegisterBtn');
 const modules=[{id:1,title:"¿Qué es la IA?",desc:"Conceptos clave y aplicaciones actuales.",quiz:[{q:"La IA se refiere a:",o:["Un lenguaje de programación","Sistemas que realizan tareas que requieren inteligencia humana","Un tipo de base de datos"],a:1},{q:"Un ejemplo cotidiano de IA es:",o:["Un lápiz","Un semáforo","Un asistente de voz"],a:2}]},{id:2,title:"Datos y modelos",desc:"Cómo los datos dan forma a los modelos.",quiz:[{q:"El sobreajuste ocurre cuando:",o:["El modelo generaliza bien","El modelo memoriza el conjunto de entrenamiento","No hay suficientes características"],a:1},{q:"La validación cruzada se usa para:",o:["Acelerar el entrenamiento","Evaluar desempeño generalizable","Reducir el tamaño del dataset"],a:1}]},{id:3,title:"Entrenamiento",desc:"Proceso de optimización y evaluación.",quiz:[{q:"La función de pérdida sirve para:",o:["Medir el error del modelo","Almacenar datos","Visualizar resultados"],a:0},{q:"El aprendizaje por lotes implica:",o:["Actualizar después de cada ejemplo","Actualizar con grupos de ejemplos","No actualizar parámetros"],a:1},{q:"La tasa de aprendizaje controla:",o:["El tamaño del paso en la optimización","La cantidad de datos","El número de clases"],a:0}]},{id:4,title:"Producción y MLOps",desc:"Despliegue, monitoreo y ciclo de vida.",quiz:[{q:"El monitoreo en producción busca:",o:["Reducir el almacenamiento","Detectar deriva y problemas","Aumentar el consumo energético"],a:1},{q:"CI/CD en MLOps ayuda a:",o:["Automatizar integraciones y despliegues","Entrenar más lento","Eliminar pruebas"],a:0}]},{id:5,title:"Ética en IA",desc:"Sesgos, transparencia y responsabilidad.",quiz:[{q:"Un riesgo ético común es:",o:["Mayor exactitud","Sesgo en datos","Menos latencia"],a:1},{q:"La explicabilidad ayuda a:",o:["Ocultar decisiones","Entender decisiones del modelo","Borrar datos"],a:1}]}];
 let currentUser=null;let userProgress=new Set();
 function moveUnderline(){const active=document.querySelector('.tab.active');if(!active)return;const r=active.getBoundingClientRect();const container=active.parentElement.getBoundingClientRect();tabUnderline.style.width=r.width+"px";tabUnderline.style.left=(r.left-container.left)+"px"}
 window.addEventListener('resize',moveUnderline)
 window.addEventListener('orientationchange',moveUnderline)
-function toggleAuthPanel(){authPanel.classList.toggle('collapsed');const c=authPanel.classList.contains('collapsed');authMin.textContent=c?'+':'–';authMin.setAttribute('aria-expanded',(!c).toString());authMin.setAttribute('aria-label',c?'Expandir':'Minimizar');if(!c)moveUnderline()}
-if(authMin){authMin.setAttribute('aria-expanded','true');authMin.setAttribute('aria-label','Minimizar')}
-if(authMin)authMin.addEventListener('click',toggleAuthPanel)
+function openAuth(name){
+  showAuth();
+  authPanel.classList.remove('collapsed');
+  authPanel.style.top='50%';
+  authPanel.style.left='50%';
+  authPanel.style.right='auto';
+  authPanel.style.transform='translate(-50%, -50%)';
+  authPanel.style.width='min(420px,92vw)';
+  authPanel.style.maxHeight='86vh';
+  switchTab(name);
+  moveUnderline();
+}
 function switchTab(name){tabs.forEach(b=>b.classList.toggle('active',b.dataset.tab===name));$$(".form").forEach(f=>f.classList.remove('show'));if(name==='register')registerForm.classList.add('show');else loginForm.classList.add('show');moveUnderline()}
 function initialsFrom(name){return name.trim().split(/\s+/).map(p=>p[0]?.toUpperCase()).slice(0,2).join('')||'U'}
 async function sha256(t){const enc=new TextEncoder().encode(t);const h=await crypto.subtle.digest('SHA-256',enc);return Array.from(new Uint8Array(h)).map(b=>b.toString(16).padStart(2,'0')).join('')}
@@ -1309,6 +1319,10 @@ let triggerConfetti;function celebrate(){if(!triggerConfetti)triggerConfetti=set
 function setupLiquidHover(){let tx=50,ty=50,cx=50,cy=50,raf=null,last=0;function setTarget(e){const r=hero.getBoundingClientRect();const x=((e.clientX||0)-r.left)/r.width*100;const y=((e.clientY||0)-r.top)/r.height*100;tx=Math.max(0,Math.min(100,x));ty=Math.max(0,Math.min(100,y));last=performance.now()}function loop(){cx+=(tx-cx)*0.12;cy+=(ty-cy)*0.12;hero.style.setProperty('--mx',cx+'%');hero.style.setProperty('--my',cy+'%');const idle=performance.now()-last>350;const near=Math.abs(tx-cx)<.05&&Math.abs(ty-cy)<.05;if((idle&&near)||document.hidden){cancelAnimationFrame(raf);raf=null;return}raf=requestAnimationFrame(loop)}function start(){if(!raf){last=performance.now();raf=requestAnimationFrame(loop)}}function stop(){tx=50;ty=50;last=performance.now()}hero.addEventListener('mousemove',e=>{setTarget(e);start()});hero.addEventListener('mouseenter',()=>start());hero.addEventListener('mouseleave',()=>stop());hero.addEventListener('touchmove',e=>{const t=e.touches[0];if(!t)return;setTarget(t);start()},{passive:true});hero.addEventListener('touchend',()=>stop());document.addEventListener('visibilitychange',()=>{if(document.hidden&&raf){cancelAnimationFrame(raf);raf=null}})}
 function setupGlobalGlow(){const bg=document.querySelector('.bg');if(!bg)return;let tx=50,ty=85,cx=50,cy=85,raf=null,last=0;function setTargetPos(x,y){tx=Math.max(0,Math.min(100,x));ty=Math.max(0,Math.min(100,y));last=performance.now()}function onPoint(e){const x=e.clientX/innerWidth*100;const y=e.clientY/innerHeight*100;setTargetPos(x,y)}function onTouch(e){const t=e.touches[0];if(!t)return;const x=t.clientX/innerWidth*100;const y=t.clientY/innerHeight*100;setTargetPos(x,y)}function loop(){cx+=(tx-cx)*0.08;cy+=(ty-cy)*0.08;bg.style.setProperty('--gx',cx+'%');bg.style.setProperty('--gy',cy+'%');const idle=performance.now()-last>300;const near=Math.abs(tx-cx)<.05&&Math.abs(ty-cy)<.05;if((idle&&near)||document.hidden){cancelAnimationFrame(raf);raf=null;return}raf=requestAnimationFrame(loop)}function start(){if(!raf){last=performance.now();raf=requestAnimationFrame(loop)}}window.addEventListener('mousemove',e=>{onPoint(e);start()});window.addEventListener('touchmove',e=>{onTouch(e);start()},{passive:true});document.addEventListener('visibilitychange',()=>{if(document.hidden&&raf){cancelAnimationFrame(raf);raf=null}})}
 function restoreUI(){loadSession();if(currentUser){showAvatar()}else{showAuth()}fetchProgress().then(()=>{if(currentUser){showModules()}})}
-registerForm.addEventListener('submit',registerHandler);loginForm.addEventListener('submit',loginHandler);handleTabs();handleAvatar();handleCTA();handleModal();handleHelp();restoreUI();
+function handleHeroAuth(){
+  if(heroLoginBtn){heroLoginBtn.addEventListener('click',()=>openAuth('login'))}
+  if(heroRegisterBtn){heroRegisterBtn.addEventListener('click',()=>openAuth('register'))}
+}
+registerForm.addEventListener('submit',registerHandler);loginForm.addEventListener('submit',loginHandler);handleTabs();handleAvatar();handleCTA();handleModal();handleHelp();handleHeroAuth();restoreUI();
 setupLiquidHover();
 setupGlobalGlow();
