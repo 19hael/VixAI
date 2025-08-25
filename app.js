@@ -230,7 +230,8 @@ búsqueda de umbral -> métricas (AUC-PR, recall@precisión) -> despliegue
 
 <div class="m-body" id="m2-q"></div>
 `}
-function module1Content(){return `<div class="m-tabs"><button class="m-tab active" data-t="c">Contenido</button><button class="m-tab" data-t="p">Prácticas</button><button class="m-tab" data-t="q">Quiz</button></div>
+function module1Content(){return `
+<div class="m-tabs"><button class="m-tab active" data-t="c">Contenido</button><button class="m-tab" data-t="p">Prácticas</button><button class="m-tab" data-t="q">Quiz</button></div>
 <div class="m-body show" id="m1-c">
   <div class="m-section">
     <h3>Introducción</h3>
@@ -389,6 +390,7 @@ function module1Content(){return `<div class="m-tabs"><button class="m-tab activ
   </div>
 </div>
 <div class="m-body" id="m1-q"></div>
+`}
  
 function renderM2Quiz(){
   const qs=[
