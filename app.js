@@ -81,6 +81,155 @@ function showModules(){modulesView.hidden=false;progressIndicator.hidden=false;r
 function hideModules(){modulesView.hidden=true;progressIndicator.hidden=true}
 function openModal(html){modalBody.innerHTML=html;modal.hidden=false}
 function closeModal(){modal.hidden=true}
+function module2Content(){return `
+<div class="m-tabs"><button class="m-tab active" data-t="c">Contenido</button><button class="m-tab" data-t="p">Prácticas</button><button class="m-tab" data-t="q">Quiz</button></div>
+<div class="m-body show" id="m2-c">
+  <div class="m-section">
+    <h3>Calidad de datos</h3>
+    <p>La calidad de los datos determina el techo del rendimiento del modelo. Problemas comunes incluyen valores faltantes, outliers, fuga de información, desbalance de clases y etiquetado ruidoso.</p>
+    <div class="m-callout"><strong>Regla práctica:</strong> mejor 1 hora limpiando datos que 10 iteraciones de modelo.</div>
+
+    <h3>Particionado de dataset</h3>
+    <ul>
+      <li>Entrenamiento (60-80%): para ajustar parámetros.</li>
+      <li>Validación (10-20%): para selección de hiperparámetros.</li>
+      <li>Prueba (10-20%): para estimar generalización final.</li>
+    </ul>
+
+    <h3>Ingeniería de características</h3>
+    <p>Transformaciones (normalización, codificación), cruces de variables, agregaciones temporales y extracción de señales. Mantén un pipeline reproducible.</p>
+
+    <h3>Selección de modelo</h3>
+    <p>Comienza simple (baselines) y aumenta complejidad sólo si aporta. Evalúa con validación cruzada cuando el dataset es pequeño o ruidoso.</p>
+
+    <h3>Métricas</h3>
+    <ul>
+      <li>Clasificación: accuracy, precisión, recall, F1, AUC.</li>
+      <li>Regresión: MAE, RMSE, R².</li>
+      <li>Desbalance extremo: prioriza AUC-PR y métricas por clase.</li>
+    </ul>
+
+    <h3>Desbalance de clases</h3>
+    <ul>
+      <li>Re-muestreo: under/over-sampling (SMOTE con cuidado).</li>
+      <li>Ponderación de clases: usa <em>class weights</em> en la pérdida.</li>
+      <li>Umbral: optimiza el punto de corte según métrica/costo.</li>
+    </ul>
+
+    <h3>Fuga de información</h3>
+    <ul>
+      <li>Usar variables con información del futuro.</li>
+      <li>Calcular estadísticas en todo el dataset antes del split.</li>
+      <li>Target encoding sin CV dentro del train.</li>
+    </ul>
+
+    <h3>Buenas prácticas de pipelines</h3>
+    <ul>
+      <li>Encapsula transformaciones y el modelo en un solo pipeline.</li>
+      <li>Ajusta estadísticas únicamente con <strong>train</strong>.</li>
+      <li>Usa CV estratificada y, si hay tiempo, validación por tiempo.</li>
+    </ul>
+
+    <h3>Trampas comunes de evaluación</h3>
+    <ul>
+      <li>Elegir métrica inadecuada (accuracy en desbalance).</li>
+      <li>Ajustar hiperparámetros contra test (sobreajuste al test).</li>
+      <li>No reportar varianza entre folds ni intervalos.</li>
+    </ul>
+
+    <h3>Ejemplo en la vida real: Detección de fraude en pagos</h3>
+    <ol>
+      <li><strong>Problema y costo:</strong> pocos positivos; FN costosos. Objetivo: alto recall con precisión suficiente.</li>
+      <li><strong>Datos:</strong> transacciones con timestamp, importe, país, dispositivo, historial del usuario.</li>
+      <li><strong>Split temporal estratificado:</strong> entrenar con meses anteriores, validar con el mes siguiente. Evita fuga temporal.</li>
+      <li><strong>Features:</strong> frecuencia por usuario en últimas 24h/7d, ratio de importes, binning de horas, one-hot de país.</li>
+      <li><strong>Baseline:</strong> Regresión logística con <em>class_weight</em>=balanced.</li>
+      <li><strong>Métrica:</strong> AUC-PR y recall@precisión≥90%. Ajustar umbral para cumplir el objetivo.</li>
+      <li><strong>CV:</strong> validación por bloques de tiempo (time series split).</li>
+      <li><strong>Producción:</strong> monitorear deriva de datos y tasa de alertas; realimentar con etiquetas confirmadas.</li>
+    </ol>
+    <pre>
+Flujo (simplificado)
+datos crudos -> split temporal -> pipeline(escala+onehot) -> modelo ->
+búsqueda de umbral -> métricas (AUC-PR, recall@precisión) -> despliegue
+    </pre>
+
+    <details class="m-callout">
+      <summary><strong>Glosario M2</strong></summary>
+      <p><strong>Stratified split:</strong> mantiene proporción de clases por partición.</p>
+      <p><strong>Leakage:</strong> información no disponible en producción se filtra al entrenamiento.</p>
+      <p><strong>AUC-PR:</strong> área bajo la curva Precision-Recall; útil en desbalance.</p>
+    </details>
+    <details class="m-callout">
+      <summary><strong>Recursos sugeridos</strong></summary>
+      <ul>
+        <li>Imbalanced-learn: estrategias de re-muestreo</li>
+        <li>Scikit-learn: Pipelines y ColumnTransformer</li>
+        <li>Artículo: “Leakage in Machine Learning” (Kaufman & Rosset)</li>
+      </ul>
+    </details>
+
+    <button class="btn ghost" id="markReadM2">Marcar como leído</button>
+  </div>
+</div>
+
+<div class="m-body" id="m2-p">
+  <div class="m-section">
+    <h3>Práctica 1: Detectar problemas de calidad</h3>
+    <div class="task" id="m2p1">
+      <div class="row">Selecciona todos los que son problemas de calidad de datos:</div>
+      <label><input type="checkbox" value="a"> 35% de valores nulos en una columna clave</label>
+      <label><input type="checkbox" value="b"> Features escaladas con StandardScaler</label>
+      <label><input type="checkbox" value="c"> Etiquetas inconsistentes entre anotadores</label>
+      <label><input type="checkbox" value="d"> Conjunto de entrenamiento y test mezclados</label>
+      <button class="btn primary" data-check="m2p1">Validar</button>
+      <div class="row" id="m2p1-res"></div>
+    </div>
+
+    <h3>Práctica 2: Particionado correcto</h3>
+    <div class="task" id="m2p2">
+      <div class="row">Activa sólo la configuración válida para un dataset de clasificación desbalanceado:</div>
+      <div class="row">
+        <button class="btn ghost tag" data-k="s1">70/15/15 con estratificación</button>
+        <button class="btn ghost tag" data-k="s2">90/5/5 sin estratificación</button>
+        <button class="btn ghost tag" data-k="s3">60/20/20 con estratificación</button>
+        <button class="btn ghost tag" data-k="s4">50/50/0</button>
+      </div>
+      <div class="row" id="m2p2-res"></div>
+    </div>
+
+    <h3>Práctica 3: Métrica adecuada</h3>
+    <div class="task" id="m2p3">
+      <div class="row">Escribe una métrica PRINCIPAL para un dataset con 2% positivos:</div>
+      <input type="text" id="m2p3-input" placeholder="Ej: AUC-PR">
+      <button class="btn primary" data-check="m2p3">Evaluar</button>
+      <div class="row" id="m2p3-res"></div>
+    </div>
+
+    <h3>Práctica 4: ¿Qué causa fuga?</h3>
+    <div class="task" id="m2p4">
+      <div class="row">Activa sólo las opciones que causan fuga de información:</div>
+      <div class="row">
+        <button class="btn ghost tag" data-k="l1">Escalar usando media/varianza de train+test</button>
+        <button class="btn ghost tag" data-k="l2">Escalar con media/varianza de train dentro del pipeline</button>
+        <button class="btn ghost tag" data-k="l3">Usar variable calculada con datos futuros</button>
+        <button class="btn ghost tag" data-k="l4">Target encoding con CV en train</button>
+      </div>
+      <div class="row" id="m2p4-res"></div>
+    </div>
+
+    <h3>Práctica 5: Elegir umbral/métrica</h3>
+    <div class="task" id="m2p5">
+      <div class="row">Costo alto de falsos negativos y pocos positivos. Escribe una métrica o enfoque principal:</div>
+      <input type="text" id="m2p5-input" placeholder="Ej: recall, F2, AUC-PR, balanced accuracy, optimizar umbral por recall@precisión">
+      <button class="btn primary" data-check="m2p5">Evaluar</button>
+      <div class="row" id="m2p5-res"></div>
+    </div>
+  </div>
+</div>
+
+<div class="m-body" id="m2-q"></div>
+`}
 function module1Content(){return `<div class="m-tabs"><button class="m-tab active" data-t="c">Contenido</button><button class="m-tab" data-t="p">Prácticas</button><button class="m-tab" data-t="q">Quiz</button></div>
 <div class="m-body show" id="m1-c">
   <div class="m-section">
@@ -240,216 +389,7 @@ function module1Content(){return `<div class="m-tabs"><button class="m-tab activ
   </div>
 </div>
 <div class="m-body" id="m1-q"></div>
-<div class="m-body" id="m2-c">
-  <div class="m-section">
-    <h3>Calidad de datos</h3>
-    <p>La calidad de los datos determina el techo del rendimiento del modelo. Problemas comunes incluyen valores faltantes, outliers, fuga de información, desbalance de clases y etiquetado ruidoso.</p>
-    <div class="m-callout"><strong>Regla práctica:</strong> mejor 1 hora limpiando datos que 10 iteraciones de modelo.</div>
-    <h3>Particionado de dataset</h3>
-    <ul>
-      <li>Entrenamiento (60-80%): para ajustar parámetros.</li>
-      <li>Validación (10-20%): para selección de hiperparámetros.</li>
-      <li>Prueba (10-20%): para estimar generalización final.</li>
-    </ul>
-    <h3>Ingeniería de características</h3>
-    <p>Transformaciones (normalización, codificación), cruces de variables, agregaciones temporales y extracción de señales. Mantén un pipeline reproducible.</p>
-    <h3>Selección de modelo</h3>
-    <p>Comienza simple (baselines) y aumenta complejidad sólo si aporta. Evalúa con validación cruzada cuando el dataset es pequeño o ruidoso.</p>
-    <h3>Métricas</h3>
-    <ul>
-      <li>Clasificación: accuracy, precisión, recall, F1, AUC.</li>
-      <li>Regresión: MAE, RMSE, R².</li>
-      <li>Problemas desbalanceados: usa AUC-PR y métricas por clase.</li>
-    </ul>
-    <button class="btn ghost" id="markReadM2">Marcar como leído</button>
-  </div>
-</div>
-<div class="m-body" id="m2-p">
-  <div class="m-section">
-    <h3>Práctica 1: Detectar problemas de calidad</h3>
-    <div class="task" id="m2p1">
-      <div class="row">Selecciona todos los que son problemas de calidad de datos:</div>
-      <label><input type="checkbox" value="a"> 35% de valores nulos en una columna clave</label>
-      <label><input type="checkbox" value="b"> Features escaladas con StandardScaler</label>
-      <label><input type="checkbox" value="c"> Etiquetas inconsistentes entre anotadores</label>
-      <label><input type="checkbox" value="d"> Conjunto de entrenamiento y test mezclados</label>
-      <button class="btn primary" data-check="m2p1">Validar</button>
-      <div class="row" id="m2p1-res"></div>
-    </div>
-    <h3>Práctica 2: Particionado correcto</h3>
-    <div class="task" id="m2p2">
-      <div class="row">Activa sólo la configuración válida para un dataset de clasificación desbalanceado:</div>
-      <div class="row">
-        <button class="btn ghost tag" data-k="s1">70/15/15 con estratificación</button>
-        <button class="btn ghost tag" data-k="s2">90/5/5 sin estratificación</button>
-        <button class="btn ghost tag" data-k="s3">60/20/20 con estratificación</button>
-        <button class="btn ghost tag" data-k="s4">50/50/0</button>
-      </div>
-      <div class="row" id="m2p2-res"></div>
-    </div>
-    <h3>Práctica 3: Métrica adecuada</h3>
-    <div class="task" id="m2p3">
-      <div class="row">Escribe una métrica PRINCIPAL para un dataset con 2% positivos:</div>
-      <input type="text" id="m2p3-input" placeholder="Ej: AUC-PR">
-      <button class="btn primary" data-check="m2p3">Evaluar</button>
-      <div class="row" id="m2p3-res"></div>
-    </div>
-  </div>
-</div>
-<div class="m-body" id="m2-q"></div>
-</div>
-</div>
-<div class="m-body" id="m1-q"></div>
-</div>
-</div>
-<div class="m-body" id="m2-c">
-  <div class="m-section">
-  <div class=\"m-section\">
-    <h3>Calidad de datos</h3>
-    <p>La calidad de los datos determina el techo del rendimiento del modelo. Problemas comunes incluyen valores faltantes, outliers, fuga de información, desbalance de clases y etiquetado ruidoso.</p>
-    <div class=\"m-callout\"><strong>Regla práctica:</strong> mejor 1 hora limpiando datos que 10 iteraciones de modelo.</div>
-
-    <h3>Particionado de dataset</h3>
-    <ul>
-      <li>Entrenamiento (60-80%): para ajustar parámetros.</li>
-      <li>Validación (10-20%): para selección de hiperparámetros.</li>
-      <li>Prueba (10-20%): para estimar generalización final.</li>
-    </ul>
-
-    <h3>Ingeniería de características</h3>
-    <p>Transformaciones (normalización, codificación), cruces de variables, agregaciones temporales y extracción de señales. Mantén un pipeline reproducible.</p>
-
-    <h3>Selección de modelo</h3>
-    <p>Comienza simple (baselines) y aumenta complejidad sólo si aporta. Evalúa con validación cruzada cuando el dataset es pequeño o ruidoso.</p>
-
-    <h3>Métricas</h3>
-    <ul>
-      <li>Clasificación: accuracy, precisión, recall, F1, AUC.</li>
-      <li>Regresión: MAE, RMSE, R².</li>
-      <li>Desbalance extremo: prioriza AUC-PR y métricas por clase.</li>
-    </ul>
-
-    <h3>Desbalance de clases</h3>
-    <ul>
-      <li>Re-muestreo: under/over-sampling (SMOTE con cuidado).</li>
-      <li>Ponderación de clases: usa <em>class weights</em> en la pérdida.</li>
-      <li>Umbral: optimiza el punto de corte según métrica/costo.</li>
-    </ul>
-
-    <h3>Fuga de información</h3>
-    <ul>
-      <li>Usar variables con información del futuro.</li>
-      <li>Calcular estadísticas en todo el dataset antes del split.</li>
-      <li>Target encoding sin CV dentro del train.</li>
-    </ul>
-
-    <h3>Buenas prácticas de pipelines</h3>
-    <ul>
-      <li>Encapsula transformaciones y el modelo en un solo pipeline.</li>
-      <li>Ajusta estadísticas únicamente con <strong>train</strong>.</li>
-      <li>Usa CV estratificada y, si hay tiempo, validación por tiempo.</li>
-    </ul>
-
-    <h3>Trampas comunes de evaluación</h3>
-    <ul>
-      <li>Elegir métrica inadecuada (accuracy en desbalance).</li>
-      <li>Ajustar hiperparámetros contra test (sobreajuste al test).</li>
-      <li>No reportar varianza entre folds ni intervalos.</li>
-    </ul>
-
-    <h3>Ejemplo en la vida real: Detección de fraude en pagos</h3>
-    <ol>
-      <li><strong>Problema y costo:</strong> pocos positivos; FN costosos. Objetivo: alto recall con precisión suficiente.</li>
-      <li><strong>Datos:</strong> transacciones con timestamp, importe, país, dispositivo, historial del usuario.</li>
-      <li><strong>Split temporal estratificado:</strong> entrenar con meses anteriores, validar con el mes siguiente. Evita fuga temporal.</li>
-      <li><strong>Features:</strong> frecuencia por usuario en últimas 24h/7d, ratio de importes, binning de horas, one-hot de país.</li>
-      <li><strong>Baseline:</strong> Regresión logística con <em>class_weight</em>=balanced.</li>
-      <li><strong>Métrica:</strong> AUC-PR y recall@precisión≥90%. Ajustar umbral para cumplir el objetivo.</li>
-      <li><strong>CV:</strong> validación por bloques de tiempo (time series split).</li>
-      <li><strong>Producción:</strong> monitorear deriva de datos y tasa de alertas; realimentar con etiquetas confirmadas.</li>
-    </ol>
-    <pre>
-Flujo (simplificado)
-datos crudos -> split temporal -> pipeline(escala+onehot) -> modelo ->
-búsqueda de umbral -> métricas (AUC-PR, recall@precisión) -> despliegue
-    </pre>
-
-    <details class=\"m-callout\">
-      <summary><strong>Glosario M2</strong></summary>
-      <p><strong>Stratified split:</strong> mantiene proporción de clases por partición.</p>
-      <p><strong>Leakage:</strong> información no disponible en producción se filtra al entrenamiento.</p>
-      <p><strong>AUC-PR:</strong> área bajo la curva Precision-Recall; útil en desbalance.</p>
-    </details>
-    <details class=\"m-callout\">
-      <summary><strong>Recursos sugeridos</strong></summary>
-      <ul>
-        <li>Imbalanced-learn: estrategias de re-muestreo</li>
-        <li>Scikit-learn: Pipelines y ColumnTransformer</li>
-        <li>Artículo: “Leakage in Machine Learning” (Kaufman & Rosset)</li>
-      </ul>
-    </details>
-
-    <button class=\"btn ghost\" id=\"markReadM2\">Marcar como leído</button>
-  </div>
-</div>
-
-<div class=\"m-body\" id=\"m2-p\">
-  <div class=\"m-section\">
-    <h3>Práctica 1: Detectar problemas de calidad</h3>
-    <div class=\"task\" id=\"m2p1\">
-      <div class=\"row\">Selecciona todos los que son problemas de calidad de datos:</div>
-      <label><input type=\"checkbox\" value=\"a\"> 35% de valores nulos en una columna clave</label>
-      <label><input type=\"checkbox\" value=\"b\"> Features escaladas con StandardScaler</label>
-      <label><input type=\"checkbox\" value=\"c\"> Etiquetas inconsistentes entre anotadores</label>
-      <label><input type=\"checkbox\" value=\"d\"> Conjunto de entrenamiento y test mezclados</label>
-      <button class=\"btn primary\" data-check=\"m2p1\">Validar</button>
-      <div class=\"row\" id=\"m2p1-res\"></div>
-    </div>
-
-    <h3>Práctica 2: Particionado correcto</h3>
-    <div class=\"task\" id=\"m2p2\">
-      <div class=\"row\">Activa sólo la configuración válida para un dataset de clasificación desbalanceado:</div>
-      <div class=\"row\">
-        <button class=\"btn ghost tag\" data-k=\"s1\">70/15/15 con estratificación</button>
-        <button class=\"btn ghost tag\" data-k=\"s2\">90/5/5 sin estratificación</button>
-        <button class=\"btn ghost tag\" data-k=\"s3\">60/20/20 con estratificación</button>
-        <button class=\"btn ghost tag\" data-k=\"s4\">50/50/0</button>
-      </div>
-      <div class=\"row\" id=\"m2p2-res\"></div>
-    </div>
-
-    <h3>Práctica 3: Métrica adecuada</h3>
-    <div class=\"task\" id=\"m2p3\">
-      <div class=\"row\">Escribe una métrica PRINCIPAL para un dataset con 2% positivos:</div>
-      <input type=\"text\" id=\"m2p3-input\" placeholder=\"Ej: AUC-PR\">
-      <button class=\"btn primary\" data-check=\"m2p3\">Evaluar</button>
-      <div class=\"row\" id=\"m2p3-res\"></div>
-    </div>
-
-    <h3>Práctica 4: ¿Qué causa fuga?</h3>
-    <div class=\"task\" id=\"m2p4\">
-      <div class=\"row\">Activa sólo las opciones que causan fuga de información:</div>
-      <div class=\"row\">
-        <button class=\"btn ghost tag\" data-k=\"l1\">Escalar usando media/varianza de train+test</button>
-        <button class=\"btn ghost tag\" data-k=\"l2\">Escalar con media/varianza de train dentro del pipeline</button>
-        <button class=\"btn ghost tag\" data-k=\"l3\">Usar variable calculada con datos futuros</button>
-        <button class=\"btn ghost tag\" data-k=\"l4\">Target encoding con CV en train</button>
-      </div>
-      <div class=\"row\" id=\"m2p4-res\"></div>
-    </div>
-
-    <h3>Práctica 5: Elegir umbral/métrica</h3>
-    <div class=\"task\" id=\"m2p5\">
-      <div class=\"row\">Costo alto de falsos negativos y pocos positivos. Escribe una métrica o enfoque principal:</div>
-      <input type=\"text\" id=\"m2p5-input\" placeholder=\"Ej: recall, F2, AUC-PR, balanced accuracy, optimizar umbral por recall@precisión\">
-      <button class=\"btn primary\" data-check=\"m2p5\">Evaluar</button>
-      <div class=\"row\" id=\"m2p5-res\"></div>
-    </div>
-  </div>
-</div>
-
-<div class=\"m-body\" id=\"m2-q\"></div>
-`}
+ 
 function renderM2Quiz(){
   const qs=[
     {q:'La fuga de información ocurre cuando:',o:['Se usa información del futuro en entrenamiento','Se pierden filas al hacer merge','Se balancea el dataset'],a:0},
