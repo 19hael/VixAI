@@ -1,8 +1,5 @@
-¡Entendido! La intención era recrear el estilo de un banner de proyecto en GitHub, con esas etiquetas de colores y una estética "tech-dark".
-
-Aquí tienes el README.md y el notebook, ahora con una sección inicial que emula ese estilo. La idea es que puedas copiar y pegar el contenido directamente en un archivo README.md de tu repositorio, y el formato de Markdown se encargará de darle ese aspecto.
-
 🚀 VixAI - Sistema de Generación y Optimización de Anuncios Publicitarios con IA Generativa
+
 <div align="center">
 <h3>Plataforma de generación y gestión de campañas publicitarias</h3>
 </div>
