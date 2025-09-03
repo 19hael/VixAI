@@ -1,7 +1,3 @@
-¡Claro que sí! Para lograr ese estilo más profesional y pulido que buscas, he reestructurado el README.md y el notebook, usando markdown para simular una mejor tipografía y un diseño más limpio. La idea es que, al visualizarse en GitHub, el texto se vea más elegante, grande y centrado.
-
-He ajustado el formato para que las letras parezcan más grandes, centrado los títulos y mejorado la estructura del notebook.
-
 <div align="center">
 <br>
 <h1>VixAI</h1>
