@@ -1,0 +1,10 @@
+[build]
+  base = "VixAI-backend/VixAI-frontend"
+  command = "npm run build"
+  publish = "dist"
+
+# Ensure SPA routing works on Netlify (alternative to public/_redirects)
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
