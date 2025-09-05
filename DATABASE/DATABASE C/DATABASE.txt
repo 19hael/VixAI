@@ -1,5 +1,1 @@
-f3Fh2t5rqRbngLkx
 
-NON pass: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVqbW54Y2JuaGhvYXl6dW9tcXV6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY5NjIxMTAsImV4cCI6MjA3MjUzODExMH0.VlTl5T_2hAmqdxT0ybaJ0FXi7Qf_hpqF-9fP2xQPtaI 
-
-url: https://ujmnxcbnhhoayzuomquz.supabase.co
