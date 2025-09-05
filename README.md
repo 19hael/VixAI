@@ -1,5 +1,3 @@
-Claro, aquí tienes una versión mejorada y organizada del README.md que incluye encabezados, banners de tecnologías, y una estructura más limpia y profesional.
-
 <p align="center">
 <img src="https://vixai.lat/logo.png" alt="VixAI Logo" width="150" />
 </p>
