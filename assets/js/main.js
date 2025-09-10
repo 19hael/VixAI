@@ -93,9 +93,12 @@ function updateUIByAuth(){
 }
 
 async function bootstrap(){
+  console.log('[bootstrap] Initializing app shell');
   initAppShell();
+  console.log('[bootstrap] Initializing auth');
   await initAuth();
   const start = ()=>{
+    console.log('[bootstrap] Starting app, session:', state.session);
     if(state.session){
       if(location.hash !== '#/admin-panel') location.hash = '#/admin-panel';
     } else {
@@ -106,9 +109,23 @@ async function bootstrap(){
   const logo = document.querySelector('.splash-logo');
   if(logo){
     let done = false;
-    logo.addEventListener('animationend', ()=>{ if(done) return; done = true; hideSplash(); start(); }, { once:true });
-    setTimeout(()=>{ if(!done){ done = true; hideSplash(); start(); } }, 1400);
+    logo.addEventListener('animationend', ()=>{
+      if(done) return;
+      done = true;
+      console.log('[bootstrap] Splash animation ended');
+      hideSplash();
+      start();
+    }, { once:true });
+    setTimeout(()=>{
+      if(!done){
+        done = true;
+        console.log('[bootstrap] Splash animation timeout');
+        hideSplash();
+        start();
+      }
+    }, 1400);
   } else {
+    console.log('[bootstrap] No splash logo found');
     hideSplash();
     start();
   }
