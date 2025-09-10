@@ -2,8 +2,8 @@ export const state = {
   session: null,            
   user: null,              
   site: {
-    title: 'Lost Premium Services',
-    subtitle: 'Innovación • Precisión • Rendimiento',
+    title: 'HACKING SERVICES',
+    subtitle: 'INFECCIONES DE RANSOWARE • ATAQUES DDoS • DOXEOS',
     description: 'Plataforma de administración y funciones premium',
   },
 };
