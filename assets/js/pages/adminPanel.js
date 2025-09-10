@@ -46,13 +46,12 @@ async function fetchUsers(){
 export function renderAdminPanel(){
   if(!state.session){
     const warn = el('div','card');
-    warn.innerHTML = '<h3>Requiere sesión</h3><p class="helper">Por favor inicia sesión para acceder al panel.</p>';
+    warn.innerHTML = '<h3>D3P PA1N</h3><p class="helper">Bienvenido Hael</p>';
     return warn;
   }
 
   const container = el('div','grid cols-2');
 
-  // Site params
   const siteCard = el('div','card');
   siteCard.innerHTML = `
     <h3>Parámetros del sitio</h3>
@@ -157,7 +156,6 @@ export function renderAdminPanel(){
     btn.addEventListener('click', ()=>renderAgg(btn.dataset.range));
   });
 
-  // Populate activity by hour
   (async()=>{
     try{
       const supa = await getSupa();
