@@ -11,7 +11,6 @@ export function buildHeader(){
       <a href="#/login" class="nav-link" id="navLogin">Iniciar sesión</a>
       <a href="#/login" class="nav-link" id="navLogout" style="display: none;">Cerrar sesión</a>
     </nav>
-  `;
   
   const updateAuthUI = () => {
     const navPanel = header.querySelector('#navPanel');
