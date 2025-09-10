@@ -4,7 +4,7 @@ export function buildHeader(){
   header.innerHTML = `
     <div class="brand">
       <img class="brand-logo" src="./IMG/LOGO ND D ANIMATION.png" alt="L"/>
-      <span>Lost Premium Services</span>
+      <span>HACKING PREMIUM SERVICES</span>
     </div>
     <nav class="nav-links">
       <a href="#/admin-panel" class="nav-link" id="navPanel" style="display: none;">Panel</a>
@@ -13,26 +13,22 @@ export function buildHeader(){
     </nav>
   `;
   
-  // Actualizar la UI según el estado de autenticación
   const updateAuthUI = () => {
     const navPanel = header.querySelector('#navPanel');
     const navLogin = header.querySelector('#navLogin');
     const navLogout = header.querySelector('#navLogout');
     
     if (window.state?.session) {
-      // Usuario autenticado
       if (navPanel) navPanel.style.display = 'inline-block';
       if (navLogin) navLogin.style.display = 'none';
       if (navLogout) navLogout.style.display = 'inline-block';
     } else {
-      // Usuario no autenticado
       if (navPanel) navPanel.style.display = 'none';
       if (navLogin) navLogin.style.display = 'inline-block';
       if (navLogout) navLogout.style.display = 'none';
     }
   };
   
-  // Configurar el evento de cierre de sesión
   const navLogout = header.querySelector('#navLogout');
   if (navLogout) {
     navLogout.addEventListener('click', async (e) => {
@@ -43,10 +39,8 @@ export function buildHeader(){
     });
   }
   
-  // Escuchar cambios en la autenticación
   window.addEventListener('auth:changed', updateAuthUI);
   
-  // Actualizar UI con el estado actual
   updateAuthUI();
   
   return header;
