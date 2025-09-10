@@ -8,7 +8,6 @@ function pre(obj){ const p = document.createElement('pre'); p.style.whiteSpace='
 export function renderHFunctions(){
   const container = el('div','grid cols-2');
 
-  // Whois Lookup
   const whoisCard = el('div','card');
   whoisCard.innerHTML = `
     <h3>YEHZ Website API — Whois Lookup</h3>
@@ -33,7 +32,6 @@ export function renderHFunctions(){
     catch(e){ whoisOut.textContent = 'Error: ' + e.message; }
   });
 
-  // Social Search
   const socialCard = el('div','card');
   socialCard.innerHTML = `
     <h3>Buscador de Redes Sociales</h3>
