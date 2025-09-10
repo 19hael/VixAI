@@ -1,6 +1,3 @@
-// Social username/site existence checker across ~20 platforms.
-// Uses r.jina.ai as a read-only CORS proxy to fetch public pages safely from the browser.
-
 const PLATFORMS = [
   { key:'instagram', name:'Instagram', url:(u)=>`https://www.instagram.com/${u}/` },
   { key:'x', name:'X (Twitter)', url:(u)=>`https://x.com/${u}` },
